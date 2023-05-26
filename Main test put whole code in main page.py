@@ -82,16 +82,18 @@ def program_create_new_sample ():
         wb.save(file_name)
         messagebox.showinfo("Success", f"Excel file saved at: {file_name}")
 
-
     def submit_form():
         # Generate Sample ID
         current_date = date.today().strftime("%d%m%y")
         type_of_test = test_type_var.get()
+        print(f"type_of_test: {type_of_test}")  # Debug statement
+
         if type_of_test == "MAL":
-            print ("ok")
             sample_id = f"{current_date}M"
         elif type_of_test == "FOOD":
             sample_id = f"{current_date}F"
+        else:
+            sample_id = ""        
 
         # Retrieve form data
         data = {
