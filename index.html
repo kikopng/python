@@ -1,1 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheet Data</title>
+    <!-- Load Tailwind CSS (minimal use for body styling) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /*
+        Ensure the HTML and body fill the entire screen,
+        and hide any default margins/scrollbars for a clean full-screen embed.
+        */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .iframe-container {
+            /* Use 100% of the viewport height and width for maximum screen usage */
+            height: 100vh;
+            width: 100vw;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none; /* Remove iframe border */
+        }
+    </style>
+</head>
+<body class="bg-white font-sans">
+    
+    <!-- Iframe Container for the Google Sheet, now occupying the entire screen -->
+    <div class="iframe-container">
+        <iframe
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vShFGBBJoJcmTZjGvN4T6nWve1VocnyENukSihj5LnlZMm3PU5s4eKLmE3uW07YJG7Det1LErGrAPUz/pubhtml?gid=1037652140&single=true"
+            allowfullscreen="true"
+            title="Google Sheet Data"
+        ></iframe>
+    </div>
+
+</body>
+</html>
 
