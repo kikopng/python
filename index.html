@@ -91,9 +91,16 @@
         const generateButton = document.getElementById('generate-button');
         const loadingIndicator = document.getElementById('loading-indicator');
 
+        // Define a constant placeholder to use for the check
+        const PLACEHOLDER_KEY_CHECK = "YOUR_API_KEY_HERE";
+
         // --- API KEY CONFIGURATION ---
+        // You have successfully replaced this with your actual key.
         const apiKey = "AIzaSyAVdRadyfcXoDXps-6F0dQ_2O5xQxQ2xwI"; 
-        const isPublicHost = apiKey !== "AIzaSyAVdRadyfcXoDXps-6F0dQ_2O5xQxQ2xwI";
+
+        // This variable correctly checks if the apiKey is different from the placeholder string.
+        // It should now evaluate to true, enabling your API key for public use.
+        const isPublicHost = apiKey !== PLACEHOLDER_KEY_CHECK;
 
         // Helper function for exponential backoff during API calls
         async function fetchWithRetry(url, options, retries = 3) {
@@ -145,18 +152,22 @@
             const prompt = promptInput.value.trim();
 
             if (!base64ImageData) {
-                alert("Please upload an image first.");
+                // IMPORTANT: Replacing alert() with a console log + UI placeholder
+                console.error("Please upload an image first.");
+                outputImage.src = "https://placehold.co/600x400/FFCC00/000000?text=Upload%20Image%20First";
                 return;
             }
             if (!prompt) {
-                alert("Please enter a description for the pet's clothes.");
+                console.error("Please enter a description for the pet's clothes.");
+                outputImage.src = "https://placehold.co/600x400/FFCC00/000000?text=Enter%20Clothing%20Prompt";
                 return;
             }
             
             // API Key Check for Public Hosting
             if (!isPublicHost && typeof __initial_auth_token === 'undefined') {
                 outputImage.src = "https://placehold.co/600x400/FFCCCC/990000?text=API%20KEY%20MISSING";
-                alert("For public hosting, please replace 'YOUR_API_KEY_HERE' in the script with your Gemini API Key.");
+                // IMPORTANT: Replacing alert() with a console log
+                console.error("For public hosting, please replace 'YOUR_API_KEY_HERE' in the script with your Gemini API Key.");
                 return;
             }
 
@@ -165,6 +176,7 @@
             generateButton.disabled = true;
             loadingIndicator.classList.remove('hidden');
 
+            // Logic to determine if the API key needs to be appended to the URL
             const urlKey = (typeof __initial_auth_token !== 'undefined' || !isPublicHost) ? '' : `?key=${apiKey}`;
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent${urlKey}`;
             
@@ -209,13 +221,15 @@
                     outputImage.src = imageUrl;
                 } else {
                     outputImage.src = "https://placehold.co/600x400/E57373/FFFFFF?text=Generation+Failed";
-                    alert("Image generation failed. The AI may not have understood the request or the image.");
+                    // IMPORTANT: Replacing alert() with a console log
+                    console.error("Image generation failed. The AI may not have understood the request or the image.");
                 }
 
             } catch (error) {
                 console.error('Error during image generation:', error);
                 outputImage.src = "https://placehold.co/600x400/E57373/FFFFFF?text=API+Error";
-                alert("An API error occurred. Check the console for details.");
+                // IMPORTANT: Replacing alert() with a console log
+                console.error("An API error occurred. Check the console for details.");
             } finally {
                 // 4. Reset UI state
                 generateButton.disabled = !base64ImageData;
