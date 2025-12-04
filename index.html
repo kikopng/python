@@ -26,6 +26,12 @@
             <p class="text-gray-500 mt-1">Upload your pet's photo and tell the AI what clothes to add!</p>
         </header>
 
+        <!-- SECURITY WARNING BOX - Shown if the API Key is detected as being exposed -->
+        <div id="security-warning" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg hidden" role="alert">
+            <p class="font-bold">Security Alert: API Key is Exposed</p>
+            <p class="text-sm">Your API key is embedded in the front-end code, making it visible to the public. For production apps, use a secure proxy server.</p>
+        </div>
+
         <div class="bg-white p-6 rounded-xl shadow-2xl space-y-6">
 
             <!-- Step 1: Image Upload -->
@@ -90,32 +96,36 @@
         const promptInput = document.getElementById('prompt-input');
         const generateButton = document.getElementById('generate-button');
         const loadingIndicator = document.getElementById('loading-indicator');
+        const securityWarning = document.getElementById('security-warning');
 
-        // Define a constant placeholder to use for the check
-        const PLACEHOLDER_KEY_CHECK = "YOUR_API_KEY_HERE";
-
-        // --- API KEY CONFIGURATION ---
-        // You have successfully replaced this with your actual key.
+        // --- API KEY CONFIGURATION (Your Key) ---
         const apiKey = "AIzaSyAVdRadyfcXoDXps-6F0dQ_2O5xQxQ2xwI"; 
-
-        // This variable correctly checks if the apiKey is different from the placeholder string.
-        // It should now evaluate to true, enabling your API key for public use.
-        const isPublicHost = apiKey !== PLACEHOLDER_KEY_CHECK;
-
+        
+        // Define the placeholder check string
+        const PLACEHOLDER_KEY_CHECK = "YOUR_API_KEY_HERE";
+        // This will be false now, correctly indicating a key is present
+        const isPlaceholderKey = apiKey === PLACEHOLDER_KEY_CHECK;
+        
         // Helper function for exponential backoff during API calls
         async function fetchWithRetry(url, options, retries = 3) {
             for (let i = 0; i < retries; i++) {
                 try {
                     const response = await fetch(url, options);
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        // Throw the response object so we can inspect the status and body later
+                        throw response;
                     }
                     return response;
                 } catch (error) {
-                    if (i < retries - 1) {
+                    if (error instanceof Response && i < retries - 1) {
+                        // This handles failed API calls that return status codes like 429 (Rate Limit)
                         const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
                         await new Promise(resolve => setTimeout(resolve, delay));
+                    } else if (error instanceof Response) {
+                        // Re-throw the failed response if it's the last retry
+                        throw error;
                     } else {
+                        // Re-throw general network errors
                         throw error;
                     }
                 }
@@ -133,11 +143,9 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                // e.target.result is a data URL (e.g., "data:image/png;base64,....")
-                // We need to extract just the Base64 part for the API call
                 const dataUrl = e.target.result;
                 const parts = dataUrl.split(',');
-                base64ImageData = parts.length > 1 ? parts[1] : null;
+                base64ImageData = parts[1]; // Correctly grabs the base64 part
 
                 // Also display a preview of the uploaded image
                 outputImage.src = dataUrl;
@@ -151,24 +159,21 @@
         async function generateImage() {
             const prompt = promptInput.value.trim();
 
-            if (!base64ImageData) {
-                // IMPORTANT: Replacing alert() with a console log + UI placeholder
-                console.error("Please upload an image first.");
-                outputImage.src = "https://placehold.co/600x400/FFCC00/000000?text=Upload%20Image%20First";
-                return;
-            }
-            if (!prompt) {
-                console.error("Please enter a description for the pet's clothes.");
-                outputImage.src = "https://placehold.co/600x400/FFCC00/000000?text=Enter%20Clothing%20Prompt";
+            if (!base64ImageData || !prompt) {
+                console.error("Missing image or prompt.");
+                outputImage.src = "https://placehold.co/600x400/FFCC00/000000?text=Missing%20Input";
                 return;
             }
             
-            // API Key Check for Public Hosting
-            if (!isPublicHost && typeof __initial_auth_token === 'undefined') {
-                outputImage.src = "https://placehold.co/600x400/FFCCCC/990000?text=API%20KEY%20MISSING";
-                // IMPORTANT: Replacing alert() with a console log
-                console.error("For public hosting, please replace 'YOUR_API_KEY_HERE' in the script with your Gemini API Key.");
-                return;
+            // Check 1: If running in Canvas environment, check for secure token
+            const isCanvasAuth = typeof __initial_auth_token !== 'undefined';
+            
+            // Show the security warning if the key is present but we are running in a potentially insecure environment (not Canvas).
+            // This is primarily for user awareness if they copy the file elsewhere.
+            if (!isCanvasAuth && !isPlaceholderKey) {
+                securityWarning.classList.remove('hidden');
+            } else {
+                securityWarning.classList.add('hidden');
             }
 
 
@@ -176,8 +181,10 @@
             generateButton.disabled = true;
             loadingIndicator.classList.remove('hidden');
 
-            // Logic to determine if the API key needs to be appended to the URL
-            const urlKey = (typeof __initial_auth_token !== 'undefined' || !isPublicHost) ? '' : `?key=${apiKey}`;
+            // Logic to determine if the API key needs to be appended to the URL.
+            // If in a Canvas environment (isCanvasAuth), the token is used, so no key is needed.
+            // Otherwise, we append the hardcoded key.
+            const urlKey = isCanvasAuth ? '' : `?key=${apiKey}`;
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent${urlKey}`;
             
             const payload = {
@@ -211,7 +218,10 @@
             try {
                 // 2. Call the Gemini Image API
                 const response = await fetchWithRetry(apiUrl, options);
+                // Log the status code immediately
+                console.log('API Status Code:', response.status);
                 const result = await response.json();
+                console.log('API Response Body:', result); // Log the full response object
                 
                 // 3. Extract Base64 image data from the response
                 const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
@@ -221,15 +231,20 @@
                     outputImage.src = imageUrl;
                 } else {
                     outputImage.src = "https://placehold.co/600x400/E57373/FFFFFF?text=Generation+Failed";
-                    // IMPORTANT: Replacing alert() with a console log
-                    console.error("Image generation failed. The AI may not have understood the request or the image.");
+                    // If candidates are missing, it's often due to safety block or a clear failure message
+                    const failureReason = result?.candidates?.[0]?.finishReason || "No image data returned.";
+                    console.error("Image generation failed. Reason:", failureReason);
                 }
 
             } catch (error) {
-                console.error('Error during image generation:', error);
+                let status = "Unknown Network Error";
+                let errorBody = {};
+                if (error instanceof Response) {
+                    status = error.status;
+                    errorBody = await error.json().catch(() => ({}));
+                }
+                console.error(`API Error - Status: ${status}`, errorBody);
                 outputImage.src = "https://placehold.co/600x400/E57373/FFFFFF?text=API+Error";
-                // IMPORTANT: Replacing alert() with a console log
-                console.error("An API error occurred. Check the console for details.");
             } finally {
                 // 4. Reset UI state
                 generateButton.disabled = !base64ImageData;
