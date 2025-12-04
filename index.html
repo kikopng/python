@@ -3,43 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheet Data</title>
-    <!-- Load Tailwind CSS (minimal use for body styling) -->
+    <title>Skyworld Loots - Arcade Theme</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /*
-        Ensure the HTML and body fill the entire screen,
-        and hide any default margins/scrollbars for a clean full-screen embed.
-        */
+        /* Custom Neon Styling for Arcade Theme */
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Dark Slate Background */
         }
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+        @media (min-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 2fr 1fr; /* 2/3 for info, 1/3 for chat on desktop */
+            }
+        }
+        
+        /* Neon Glow Effect (Blue/Pink) */
+        .neon-glow {
+            color: #f97316; /* Orange/Red for Title */
+            text-shadow: 
+                0 0 5px #f97316,
+                0 0 10px #f97316,
+                0 0 20px rgba(249, 115, 22, 0.7);
+        }
+
+        /* Card styles - Dark background with neon border/shadow */
+        .arcade-card {
+            background-color: #1e293b; /* Darker blue-slate */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 2px solid #6366f1; /* Indigo/Purple border */
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+            color: #e2e8f0; /* Light text */
+        }
+        
+        /* Chat card needs specific height for scrolling */
+        .chat-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 50vh;
+            max-height: 80vh; 
+        }
+
+        .chat-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .chat-input-area {
+            flex-shrink: 0;
+            padding: 1rem;
+            background-color: #111827; /* Near black input area */
+            border-top: 1px solid #374151;
+        }
+
+        /* Full-screen iframe toggle styles */
         .iframe-container {
-            /* Use 100% of the viewport height and width for maximum screen usage */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100vh;
-            width: 100vw;
+            z-index: 50; 
+            background-color: #0f172a;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            opacity: 0;
+            visibility: hidden; /* Initial state set by CSS */
         }
-        iframe {
+        .active-view {
+            opacity: 1;
+            visibility: visible;
+        }
+        .iframe-container iframe {
             width: 100%;
             height: 100%;
-            border: none; /* Remove iframe border */
+            border: none;
+            padding-top: 50px;
+        }
+
+        /* Message Bubbles */
+        .user-message {
+            background-color: #ec4899; /* Neon Pink */
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+            box-shadow: 0 0 5px #ec4899;
+        }
+        .bot-message {
+            background-color: #ffffff; /* White background for bot message */
+            color: #1f2937; /* Dark text */
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+            border-radius: 0.75rem;
+        }
+        /* Neon Button Styling */
+        .neon-button-primary {
+            background-color: #3b82f6; /* Blue */
+            color: white;
+            box-shadow: 0 0 8px #3b82f6;
+            transition: all 0.3s ease;
+        }
+        .neon-button-primary:hover {
+            background-color: #60a5fa;
+            box-shadow: 0 0 15px #60a5fa, 0 0 25px #60a5fa;
+        }
+        .neon-button-secondary {
+             background-color: #ef4444; /* Red */
+             color: white;
+            box-shadow: 0 0 8px #ef4444;
+            transition: all 0.3s ease;
+        }
+        .neon-button-secondary:hover {
+             background-color: #f87171;
+             box-shadow: 0 0 15px #f87171, 0 0 25px #f87171;
         }
     </style>
 </head>
-<body class="bg-white font-sans">
-    
-    <!-- Iframe Container for the Google Sheet, now occupying the entire screen -->
-    <div class="iframe-container">
+<body>
+
+    <!-- Main Content Interface (Trip Info + Chat) -->
+    <div id="trip-details" class="main-container">
+        
+        <!-- Header -->
+        <header class="flex flex-col items-center p-6 bg-gray-900 shadow-xl w-full z-10">
+            <h1 class="text-5xl font-extrabold mb-4 neon-glow uppercase tracking-wider">Skyworld Loots</h1>
+            <button id="show-sheet-btn" class="mt-3 neon-button-secondary font-bold py-2 px-6 rounded-full text-sm focus:outline-none disabled:opacity-50">
+                View Live Mini-Game Scoreboard
+            </button>
+        </header>
+
+        <!-- Content Grid: Simple Info (Left) and Chatbot (Right) -->
+        <div class="content-grid flex-grow">
+            
+            <!-- 1. Annual Dinner / Trip Information Card (Minimalist) -->
+            <div class="info-card arcade-card flex flex-col items-center justify-center text-center">
+                <h2 class="text-3xl font-bold mb-8 text-indigo-400 border-b-2 border-indigo-400 pb-2">Event Details</h2>
+                
+                <div class="space-y-6">
+                    <div class="p-4 rounded-lg border-2 border-pink-500 bg-gray-800 shadow-lg">
+                        <p class="text-xl font-bold text-pink-400">Event Date</p>
+                        <p class="text-2xl font-extrabold mt-1">11 to 12 December 2025</p>
+                    </div>
+
+                    <div class="p-4 rounded-lg border-2 border-green-500 bg-gray-800 shadow-lg">
+                        <p class="text-xl font-bold text-green-400">Location</p>
+                        <p class="text-2xl font-extrabold mt-1">Genting Highland</p>
+                    </div>
+
+                    <div class="mt-8 text-sm text-gray-400 p-2 border-t border-gray-600">
+                        For the full schedule and detailed agenda, please use **Jayce Bot** on the right.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Jayce Bot Chat Card (Small Section) -->
+            <div class="chat-card arcade-card">
+                <h2 class="text-xl font-bold p-4 border-b border-gray-700 flex-shrink-0">
+                    <span class="text-cyan-400">JAYCE BOT</span> <span class="text-sm font-normal text-gray-400">- Quick Q&A</span>
+                </h2>
+
+                <!-- Chat Display Area -->
+                <div id="chat-messages" class="chat-area flex flex-col space-y-4">
+                    <!-- Initial Welcome Message -->
+                    <div class="flex justify-start">
+                        <div class="bot-message p-3 rounded-xl max-w-full shadow-sm text-sm">
+                            Hello! I'm Jayce Bot, your assistant. I only know about the full trip itinerary. Ask me anything about the schedule!
+                        </div>
+                    </div>
+                    <!-- Chat messages will be appended here -->
+                </div>
+
+                <!-- Chat Input Area -->
+                <div class="chat-input-area">
+                    <form id="chat-form" class="flex space-x-3">
+                        <input
+                            type="text"
+                            id="user-input"
+                            placeholder="Ask Jayce Bot a question..."
+                            required
+                            class="flex-grow p-3 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition duration-150 bg-gray-800 text-white"
+                        >
+                        <button
+                            type="submit"
+                            id="send-button"
+                            class="p-3 rounded-lg neon-button-primary disabled:opacity-50"
+                        >
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Google Sheet Scoreboard View (Initially Hidden) -->
+    <div id="sheet-view" class="iframe-container">
+        <div class="fixed top-0 left-0 w-full bg-gray-900 shadow-lg p-2 z-20 flex items-center">
+             <button onclick="showChatInterface()" class="neon-button-secondary font-bold py-2 px-4 rounded-lg text-sm transition duration-150">
+                &larr; Back to Main Info
+            </button>
+            <span class="ml-4 text-lg font-semibold text-pink-400 neon-glow">Live Mini-Game Scoreboard</span>
+        </div>
+        <!-- The Iframe containing your Google Sheet -->
         <iframe
             src="https://docs.google.com/spreadsheets/d/e/2PACX-1vShFGBBJoJcmTZjGvN4T6nWve1VocnyENukSihj5LnlZMm3PU5s4eKLmE3uW07YJG7Det1LErGrAPUz/pubhtml?gid=1037652140&single=true"
             allowfullscreen="true"
-            title="Google Sheet Data"
+            title="Google Sheet Scoreboard"
         ></iframe>
     </div>
 
+    <script>
+        // --- Core Gemini API Configuration ---
+        const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
+        const API_BASE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
+        
+        // FIX: Temporarily inserting the API key as requested to bypass environment injection failure.
+        const apiKey = "AIzaSyCo5B2_Azu1c66ivlAKfF712VwAQ_peTAE"; 
+
+        // System Instruction is kept the same to maintain the bot's knowledge base and strict rules.
+        const SYSTEM_INSTRUCTION_CONTENT = `
+            You are "Jayce Bot," an informational assistant for the "Genting SkyWorlds Company Trip." Your sole purpose is to answer participant questions based *only* on the provided itinerary and task list below.
+
+            **Trip Information:** The main trip event is from **11 to 12 December 2025** at Genting Highland. Pre-trip tasks start Dec 5.
+
+            **Trip Itinerary & Task List:**
+            - **Dates:** 5–11 December 2025 | Genting SkyWorlds Company Trip
+            - **Dec 5 Tasks:** Remind everyone about the gift and the black plastic bag.
+            - **Dec 8 Tasks:** Distribute black plastic bags. Gifts go inside and must be brought to the office on 9 Dec. Brief Selina on the Score Board.
+            - **Dec 9 Tasks:** Bring Secret Santa gifts and lucky draw prizes to the office. Send scheduled email ("Email for 9/12"), SkyWorlds ticket QR, and breakfast QR. Ask Selina to practise using the Score Board. Distribute raincoats.
+            - **Dec 10 Tasks (ALL MORNING):** Distribute Touch ’n Go credit (RM35 each) for lunch. Selina to invite all participants (excluding Helen’s boyfriend) to WhatsApp group & send game rules at 7:00 PM. Selina to inform Kelly that she is the Photo Group Target Leader (brief her on Animal Tag). Selina to share room allocation via WhatsApp. Brief Helen, Kelly, and Ms. Yeoh on check-in process (must present IC; 2 ICs for 2 cards; Accepted: IC / Passport / Genting Rewards Card).
+            - **Dec 11 (Trip Day) - 07:30 AM:** Gather at office. Load luggage/backpacks into Ying’s car. Put Secret Santa gifts into Mr Kelvin’s car.
+            - **07:45 AM:** Depart.
+            - **09:15 AM:** Gather at First World Lobby.
+            - **09:30 AM:** Depart to SkyWorlds Theme Park. Conduct Briefing 1.
+            - **Briefing 1 Summary:** QR code contains SkyWorlds ticket and Breakfast QR. Scan to enter. After entering: take 1 group photo, head to Andromeda Base locker area if needed. Free & easy afterward. Games are Hand Sign, Creative Photo, Photo Target.
+            - **12:00 PM:** Gather at locker → walk to Buck Café for lunch (use RM35 credit).
+            - **12:50 PM:** Begin Animal Tag mini game.
+            - **1:30 PM:** Conduct Briefing 2.
+            - **Briefing 2 Summary:** Free and easy after this. 4:00 PM: gather at Central Park Garden Gate. IMPORTANT: Collect all locker items before heading to the gate. Mini games before exiting. Strict timings.
+            - **4:00 PM:** Gather at Central Park Garden for Formation War.
+            - **4:30 PM:** Exit theme park, collect luggage/gifts.
+            - **5:00 PM:** Hotel Check-in. Gather at lobby at 6:00 PM.
+            - **Evening Plan (at B&L):** 6:30 PM (Seating & Boss speech), 7:00 PM (Dinner), 8:00 PM (Secret Santa), 8:45 PM (Mini Game), 9:00 PM (Lucky Draw), 9:30 PM (Bonus & Closing Speech). Optional: 10:30 PM Snow Show.
+            - **Rain Plan B (Morning):** If raining, Photo Target game changes to Poker face + thumbs up in Skytropolis or Dramatic pose with dinosaur. Individual missions change to: Selfie in front of casino, Photo of throwing rubbish in a bin, Selfie with zombie. Gather at 11:30 AM at theme park entrance.
+            - **Rain Plan B (4:00 PM):** Formation War gathering changes to Theme Park Exit. Mini game moves to Ripley’s Adventureland or Skytropolis Indoor Theme Park.
+
+            **STRICT RULE:** You MUST NOT answer any question that is not directly related to the provided itinerary or task list. If you cannot find the answer in the text provided, or if the user asks a non-event related question (e.g., general knowledge, personal opinions), you MUST respond with the following EXACT phrase: "I apologize, but I only have information regarding the Genting SkyWorlds Company Trip. Please direct this specific question to one of the hosts (e.g., Selina, Helen, Ms. Yeoh, or Mr. Kelvin) directly."
+        `;
+
+        // --- DOM Elements and State ---
+        const tripDetails = document.getElementById('trip-details');
+        const sheetView = document.getElementById('sheet-view');
+        const showSheetBtn = document.getElementById('show-sheet-btn');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const sendButton = document.getElementById('send-button');
+
+        let chatHistory = [];
+
+        // --- Chat UI Functions ---
+
+        /**
+         * Adds a message to the chat display.
+         * @param {string} text - The content of the message.
+         * @param {'user' | 'bot' | 'loading'} sender - The sender type.
+         */
+        function addMessageToChat(text, sender) {
+            const isUser = sender === 'user';
+            const messageId = crypto.randomUUID();
+
+            const messageHtml = `
+                <div id="msg-${messageId}" class="flex ${isUser ? 'justify-end' : 'justify-start'}">
+                    <div class="p-3 rounded-xl max-w-xs sm:max-w-md shadow-sm text-sm ${isUser ? 'user-message' : 'bot-message'}">
+                        ${sender === 'loading' ? '<div class="flex items-center space-x-2"><svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="text-gray-400">Typing...</span></div>' : text.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+            chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            return messageId;
+        }
+
+        // --- Gemini API Call Logic ---
+
+        /**
+         * Fetches response from Gemini API with exponential backoff.
+         */
+        async function exponentialBackoffFetch(url, options, retries = 5, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+                    if (response.status === 429 && i < retries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; // Exponential increase
+                    } else {
+                        throw new Error(`API failed with status: ${response.status}`);
+                    }
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        /**
+         * Calls the Gemini API to get a chat response.
+         * @param {string} userQuery - The user's question.
+         */
+        async function fetchGeminiResponse(userQuery) {
+            const apiUrl = `${API_BASE_URL}?key=${apiKey}`;
+
+            // Add user message to history before sending
+            chatHistory.push({ role: "user", parts: [{ text: userQuery }] });
+
+            const payload = {
+                contents: chatHistory,
+                systemInstruction: {
+                    parts: [{ text: SYSTEM_INSTRUCTION_CONTENT }]
+                },
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            let loadingId = addMessageToChat('', 'loading');
+            sendButton.disabled = true;
+
+            try {
+                const response = await exponentialBackoffFetch(apiUrl, options);
+                const result = await response.json();
+                
+                const candidate = result.candidates?.[0];
+                let botText = "Sorry, I couldn't process that. Please try again or contact a host.";
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    botText = candidate.content.parts[0].text;
+                    
+                    // Add bot response to history
+                    chatHistory.push({ role: "model", parts: [{ text: botText }] });
+                }
+
+                // Update the loading message with the final response
+                const loadingElement = document.getElementById(`msg-${loadingId}`);
+                if (loadingElement) {
+                    loadingElement.outerHTML = `
+                        <div class="flex justify-start">
+                            <div class="bot-message p-3 rounded-xl max-w-xs sm:max-w-md shadow-sm text-sm">
+                                ${botText.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    `;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                const loadingElement = document.getElementById(`msg-${loadingId}`);
+                if (loadingElement) {
+                    // Providing a more specific error message related to API/service issues
+                    loadingElement.outerHTML = `
+                        <div class="flex justify-start">
+                            <div class="bot-message p-3 rounded-xl max-w-xs sm:max-w-md shadow-sm text-sm text-red-500 bg-red-900/50 border border-red-500">
+                                ⚠️ Network Error. The request to the API failed. This is likely due to an issue with the API Key or network firewall.
+                            </div>
+                        </div>
+                    `;
+                }
+                // Remove the failed user query from history to allow retrying
+                chatHistory.pop(); 
+            } finally {
+                sendButton.disabled = false;
+            }
+        }
+
+        // --- Event Listeners and Toggling ---
+
+        // Function to show the Google Sheet view
+        function showScoreboard() {
+            tripDetails.style.display = 'none'; 
+            sheetView.classList.add('active-view');
+        }
+
+        // Function to show the main chat interface
+        function showChatInterface() {
+            sheetView.classList.remove('active-view');
+            tripDetails.style.display = 'flex'; // Restore display of main content (flex)
+        }
+
+        // Handle chat form submission
+        chatForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const query = userInput.value.trim();
+            if (query) {
+                addMessageToChat(query, 'user');
+                fetchGeminiResponse(query);
+                userInput.value = '';
+                userInput.focus();
+            }
+        });
+
+        // Attach event listener to the scoreboard button
+        showSheetBtn.addEventListener('click', showScoreboard);
+
+        // Initial setup for chat display
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ensure the initial view is visible
+            showChatInterface();
+            // Hide the scoreboard view using CSS class control
+            sheetView.classList.remove('active-view');
+        });
+
+    </script>
+
 </body>
 </html>
-
