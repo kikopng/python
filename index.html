@@ -258,15 +258,23 @@
             <!-- 2. Jayce Bot Chat Card (Small Section) -->
             <div class="chat-card arcade-card">
                 <h2 class="text-xl font-bold p-4 border-b border-gray-700 flex-shrink-0">
-                    <span class="text-cyan-400">JAYCE BOT</span> <span class="text-sm font-normal text-gray-400">- Quick Q&A</span>
+                    <span class="text-cyan-400">JAYCE BOT</span> <span class="text-sm font-normal text-gray-400">- Official Trip Assistant</span>
                 </h2>
 
                 <!-- Chat Display Area -->
                 <div id="chat-messages" class="chat-area flex flex-col space-y-4">
-                    <!-- Initial Welcome Message -->
+                    <!-- Initial Welcome Message (Updated to new requirements) -->
                     <div class="flex justify-start">
                         <div class="bot-message p-3 rounded-xl max-w-full shadow-sm text-sm">
-                            Hello! I'm Jayce Bot, your assistant. I only know about the full trip itinerary. Ask me anything about the schedule!
+                            Hi! I’m Jayce Bot, your official Genting trip assistant for <b>11–12 December</b>. <br>
+                            I can help with anything about the schedule, meeting points, logistics, meals, mini games, and what you should be doing at any time. <br><br>
+                            Example questions you can ask: <br>
+                            • Where should I gather now? <br>
+                            • What is the next event? <br>
+                            • When is lunch? <br>
+                            • What happens if I am late? <br>
+                            • Where do we meet before going to the café? <br>
+                            How can I help?
                         </div>
                     </div>
                     <!-- Chat messages will be appended here -->
@@ -318,50 +326,127 @@
         const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
         const API_BASE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
         
-        // FIX: Temporarily inserting the API key as requested to bypass environment injection failure.
+        // API key definition (must remain here for Canvas environment)
         const apiKey = "AIzaSyCo5B2_Azu1c66ivlAKfF712VwAQ_peTAE"; 
 
-        // URLs for the new content
+        // URLs for external content
         const SCOREBOARD_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vShFGBBJoJcmTZjGvN4T6nWve1VocnyENukSihj5LnlZMm3PU5s4eKLmE3uW07YJG7Det1LErGrAPUz/pubhtml?gid=1037652140&single=true";
         const PRIZE_POOL_URL = "https://docs.google.com/document/d/e/2PACX-1vTNpUtpmWSAKCM-gAn4kGGkY8c3oLy8XDIDgdwQr_pKa0-jFEY1kxlodfIfpsaLog3aUdpMyYg02xtM/pub";
         const THEME_PARK_RULES_URL = "https://www.gentingskyworlds.com/en/rules-regulations.html";
 
-        // System Instruction is updated to reflect the new, simpler schedule for Dec 11.
+        // ----------------------------------------------------------------------
+        // JAYCE BOT SYSTEM INSTRUCTION (MANDATORY RULES & KNOWLEDGE)
+        // ----------------------------------------------------------------------
         const SYSTEM_INSTRUCTION_CONTENT = `
-            You are "Jayce Bot," an informational assistant for the "Genting SkyWorlds Company Trip." Your sole purpose is to answer participant questions based *only* on the provided itinerary and task list below.
-
-            **Trip Information:** The main trip event is from **11 to 12 December 2025** at Genting Highland. Pre-trip tasks start Dec 5.
-
-            **Trip Itinerary & Task List:**
-            - **Dates:** 5–12 December 2025 | Skyworld Loots Annual Dinner Trip
-            - **Dec 5 Tasks:** Remind everyone about the gift and the black plastic bag.
-            - **Dec 8 Tasks:** Distribute black plastic bags. Gifts go inside and must be brought to the office on 9 Dec. Brief Selina on the Score Board.
-            - **Dec 9 Tasks:** Bring Secret Santa gifts and lucky draw prizes to the office. Send scheduled email ("Email for 9/12"), SkyWorlds ticket QR, and breakfast QR. Ask Selina to practise using the Score Board. Distribute raincoats.
-            - **Dec 10 Tasks (ALL MORNING):** Distribute Touch ’n Go credit (RM35 each) for lunch. Selina to invite all participants (excluding Helen’s boyfriend) to WhatsApp group & send game rules at 7:00 PM. Selina to inform Kelly that she is the Photo Group Target Leader (brief her on Animal Tag). Selina to share room allocation via WhatsApp. Brief Helen, Kelly, and Ms. Yeoh on check-in process (must present IC; 2 ICs for 2 cards; Accepted: IC / Passport / Genting Rewards Card).
+            You are Jayce Bot, the official assistant for the Company Trip to Genting SkyWorlds. 
+            Your job is to guide participants ONLY for the dates 11 and 12 December, and ONLY for itinerary-related questions.
             
-            **Dec 11 - Theme Park Day Schedule:**
-            - **10:00 AM:** Enter theme park, take a group photo, and rent lockers at Andromeda Base.
-            - **10:30 AM:** Free Time.
-            - **12:00 PM:** Gather at Andromeda Base locker area, have lunch at Buck Cafe, and start the Mini Game (Animal Tag).
-            - **1:00 PM:** Free Time.
-            - **4:00 PM:** Gather in Central Park for the Mini Game (Pair Up Game).
-            - **4:30 PM:** Exit theme park.
-            - **5:00 PM:** Hotel Check-in.
-            - **6:00 PM:** Gather in the lobby and head to the Annual Dinner venue.
+            Before the user asks anything, you are instructed to greet them, but that greeting is already handled in the UI.
 
+            ----------------------------------------------------------------------
+            GENERAL RULES
+            ----------------------------------------------------------------------
+            
+            1. ONLY answer questions related to the trip on 11–12 December. 
+               If the user asks about weather, Genting food recommendations, hotel facilities, toilets, rides, or anything outside the itinerary, reply with the following EXACT phrase: 
+               “Please ask the host (Selina or Jayce) for this.”
+            
+            2. If the user asks for information NOT provided in the itinerary (e.g., number of game targets, locker price), 
+               reply with the following EXACT phrase: 
+               “Please ask the host (Selina or Jayce) for this.”
+            
+            3. After EVERY answer, you MUST add a “Status Update” section where you: 
+               - Understand the user's stated current time and date 
+               - Determine what they should be doing now based on the itinerary 
+               - Identify the next event in the schedule 
+            
+               Format it exactly like this, using the time and date provided by the user:
+            
+               ---
+               **Status Update** Current Time: <time>, <date> 
+               You should currently be: <what they should be doing> 
+               Next Event: <next event> 
+               ---
+            
+            4. If the user does NOT mention the current time, and their question requires time context (e.g., "Where should I gather now?"), ask: 
+               “Please tell me the current time so I can guide you accurately.”
+            
+            5. If the user is late for the morning gathering on 11 Dec (before 7:45 AM): 
+               Respond with the specific latecomer response (see FIXED LOGISTICS).
+            
+            ----------------------------------------------------------------------
+            FIXED LOGISTICS KNOWLEDGE (USE THESE EXACTLY)
+            ----------------------------------------------------------------------
+            
+            • Latecomer Response (if late for morning gathering on 11 Dec): 
+              “If you are late, please contact the host (Selina or Jayce). If you cannot arrive in time, you may need to take your own transport (taxi/Grab) to Genting as the driver cannot wait.”
+
+            • Gathering Point (11 Dec Morning): Office Loading Bay.
+            • Hotel: First World Hotel 
+            • Checkout Time: 11:00 AM on 12 December 
+            
+            • Food & Meals:
+              Participants gather at the locker area first. 
+              Hosts will then bring everyone to the café together. 
+              Participants may order food above RM35, but any extra amount must be paid by themselves.
+            
+            • Committee Roles: 
+              - Selina: Almost everything 
+              - Jayce: Almost everything 
+              - Helen, Kelly, Ms Yeoh: Assist with hotel check-in 
+            
+            ----------------------------------------------------------------------
+            WHAT PARTICIPANTS SHOULD BRING (DEFAULT GUIDELINES)
+            ----------------------------------------------------------------------
+            
+            If asked, recommend only these general items:
+            • Power bank 
+            • Water bottle 
+            • Jacket (Genting is cold)
+            • Small bag 
+            • Personal necessities 
+            • Money 
+            • Raincoat (say it may be needed if raining)
+            
+            Do NOT invent prohibited items. If user asks about an uncertain item, use the general "Please ask the host..." rule.
+            
+            ----------------------------------------------------------------------
+            TRIP ITINERARY (IMPORTANT — FOLLOW STRICTLY)
+            ----------------------------------------------------------------------
+            
+            **Dec 11 - Morning/Afternoon Schedule:**
+            - 07:30 AM: Gather at office loading bay.
+            - 07:45 AM: Depart.
+            - 09:15 AM: Gather at First World Lobby.
+            - 09:30 AM: Depart to SkyWorlds Theme Park.
+            - 10:00 AM: Enter theme park, take a group photo, and rent lockers at Andromeda Base.
+            - 10:30 AM - 12:00 PM: Free Time (Theme Park).
+            - 12:00 PM: Gather at Andromeda Base locker area, have lunch at Buck Cafe, and start the Mini Game (Animal Tag).
+            - 1:00 PM - 4:00 PM: Free Time (Theme Park).
+            - 4:00 PM: Gather in Central Park for the Mini Game (Pair Up Game).
+            - 4:30 PM: Exit theme park.
+            - 5:00 PM: Hotel Check-in (First World Hotel).
+            - 6:00 PM: Gather in the lobby and head to the Annual Dinner venue.
+            
             **Dec 11 - Evening Plan (Annual Dinner at B&L):**
-            - **6:30 PM:** Seating & Boss speech
-            - **7:00 PM:** Dinner
-            - **8:00 PM:** Secret Santa Exchange
-            - **8:45 PM:** Mini Game
-            - **9:00 PM:** Lucky Draw
-            - **9:30 PM:** Bonus & Closing Speech
-            - **Optional:** 10:30 PM Snow Show
-
+            - 6:30 PM: Seating & Boss speech
+            - 7:00 PM: Dinner
+            - 8:00 PM: Secret Santa Exchange
+            - 8:45 PM: Mini Game
+            - 9:00 PM: Lucky Draw
+            - 9:30 PM: Bonus & Closing Speech
+            - Optional: 10:30 PM Snow Show
+            
+            **Dec 12 - Departure Day Schedule:**
+            - Until 11:00 AM: Free time, enjoy breakfast (QR code provided), pack.
+            - 11:00 AM: Checkout Time.
+            
             **Rain Plan B (Morning):** If raining, Photo Target game changes to Poker face + thumbs up in Skytropolis or Dramatic pose with dinosaur. Individual missions change to: Selfie in front of casino, Photo of throwing rubbish in a bin, Selfie with zombie. Gather at 11:30 AM at theme park entrance.
             **Rain Plan B (4:00 PM):** Formation War gathering changes to Theme Park Exit. Mini game moves to Ripley’s Adventureland or Skytropolis Indoor Theme Park.
-
-            **STRICT RULE:** You MUST NOT answer any question that is not directly related to the provided itinerary or task list. If you cannot find the answer in the text provided, or if the user asks a non-event related question (e.g., general knowledge, personal opinions), you MUST respond with the following EXACT phrase: "I apologize, but I only have information regarding the Genting SkyWorlds Company Trip. Please direct this specific question to one of the hosts (e.g., Selina, Helen, Ms. Yeoh, or Mr. Kelvin) directly."
+            
+            ----------------------------------------------------------------------
+            END OF SYSTEM INSTRUCTION
+            ----------------------------------------------------------------------
         `;
 
         // --- DOM Elements and State ---
@@ -381,14 +466,14 @@
 
         let chatHistory = [];
 
-        // --- Chat UI Functions (omitted for brevity, assume unchanged and functional) ---
+        // --- Chat UI Functions ---
         function addMessageToChat(text, sender) {
             const isUser = sender === 'user';
             const messageId = crypto.randomUUID();
 
             const messageHtml = `
                 <div id="msg-${messageId}" class="flex ${isUser ? 'justify-end' : 'justify-start'}">
-                    <div class="p-3 rounded-xl max-w-xs sm:max-w-md shadow-sm text-sm ${isUser ? 'user-message' : 'bot-message'}">
+                    <div class="p-3 rounded-xl whitespace-pre-wrap max-w-xs sm:max-w-md shadow-sm text-sm ${isUser ? 'user-message' : 'bot-message'}">
                         ${sender === 'loading' ? '<div class="flex items-center space-x-2"><svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="text-gray-400">Typing...</span></div>' : text.replace(/\n/g, '<br>')}
                     </div>
                 </div>
@@ -400,7 +485,7 @@
             return messageId;
         }
         
-        // --- Gemini API Call Logic (omitted for brevity, assume unchanged and functional) ---
+        // --- Gemini API Call Logic ---
         async function exponentialBackoffFetch(url, options, retries = 5, delay = 1000) {
             for (let i = 0; i < retries; i++) {
                 try {
@@ -457,10 +542,11 @@
 
                 const loadingElement = document.getElementById(`msg-${loadingId}`);
                 if (loadingElement) {
+                    // Note: botText contains formatting like \n and ---, which we allow the browser to interpret as line breaks using the whitespace-pre-wrap style.
                     loadingElement.outerHTML = `
                         <div class="flex justify-start">
                             <div class="bot-message p-3 rounded-xl max-w-xs sm:max-w-md shadow-sm text-sm">
-                                ${botText.replace(/\n/g, '<br>')}
+                                ${botText}
                             </div>
                         </div>
                     `;
@@ -488,11 +574,6 @@
 
         // --- External View Toggling ---
 
-        /**
-         * Generic function to display external content in the iframe.
-         * @param {string} url - The URL to load into the iframe.
-         * @param {string} title - The title for the iframe header.
-         */
         function showExternalView(url, title) {
             externalIframe.src = url;
             iframeTitle.textContent = title;
@@ -500,26 +581,22 @@
             externalView.classList.add('active-view');
         }
 
-        // Function to show the Scoreboard view
         function showScoreboard() {
             showExternalView(SCOREBOARD_URL, 'Live Mini-Game Scoreboard');
         }
 
-        // Function to show the Prize Pool view
         function showPrizePool() {
             showExternalView(PRIZE_POOL_URL, 'Annual Dinner Prize Pool');
         }
         
-        // Function to open the Theme Park Rules in a new tab
         function openRulesAndRegulations() {
             window.open(THEME_PARK_RULES_URL, '_blank');
         }
 
-        // Function to show the main chat interface
         function showChatInterface() {
             externalView.classList.remove('active-view');
             tripDetails.style.display = 'flex'; 
-            externalIframe.src = ""; // Clear iframe source when hidden
+            externalIframe.src = ""; 
         }
 
         // Handle chat form submission
@@ -527,6 +604,7 @@
             event.preventDefault();
             const query = userInput.value.trim();
             if (query) {
+                // The new system prompt handles the required greeting; we just send the user query.
                 addMessageToChat(query, 'user');
                 fetchGeminiResponse(query);
                 userInput.value = '';
