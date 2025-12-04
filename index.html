@@ -3,78 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini AI Chatbot</title>
+    <title>AI Pet Dress-Up Generator</title>
     <!-- Load Tailwind CSS for beautiful, responsive styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom scrollbar styling for the chat window */
-        #chat-window {
-            height: 70vh;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-        }
-        /* Style for the user and assistant messages */
-        .user-message {
-            @apply bg-indigo-500 text-white p-3 rounded-lg max-w-lg self-end;
-        }
-        .assistant-message {
-            @apply bg-gray-200 text-gray-800 p-3 rounded-lg max-w-lg self-start;
+        /* Custom styling for the generated image display */
+        #output-image {
+            min-height: 300px;
+            background-color: #f3f4f6;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 100 100'%3E%3Ctext x='50' y='50' font-size='4' fill='%23ccc' text-anchor='middle'%3EGenerated Image Appears Here%3C/text%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
+<body class="bg-indigo-50 min-h-screen font-sans">
 
-    <div class="container mx-auto p-4 flex flex-col h-screen">
-        <header class="text-center py-4">
-            <h1 class="text-4xl font-extrabold text-indigo-700">🤖 Gemini Chat</h1>
-            <p class="text-gray-500 mt-1">Ask me anything!</p>
+    <div class="container mx-auto p-4 max-w-2xl">
+        <header class="text-center py-6">
+            <h1 class="text-4xl font-extrabold text-pink-600">🐶 AI Pet Dress-Up</h1>
+            <p class="text-gray-500 mt-1">Upload your pet's photo and tell the AI what clothes to add!</p>
         </header>
 
-        <!-- Chat Display Area -->
-        <div id="chat-window" class="flex flex-col space-y-4 p-4 mb-4 bg-white shadow-xl rounded-xl ring-1 ring-gray-200">
-            <!-- Initial welcome message from the assistant -->
-            <div class="assistant-message">
-                Hello! I'm an AI powered by Gemini. How can I help you today?
-            </div>
-        </div>
+        <div class="bg-white p-6 rounded-xl shadow-2xl space-y-6">
 
-        <!-- Input Area -->
-        <div class="mt-auto bg-white p-4 rounded-xl shadow-2xl sticky bottom-0">
-            <div class="flex items-center space-x-3">
+            <!-- Step 1: Image Upload -->
+            <div class="border-b pb-4 border-gray-100">
+                <label for="pet-image" class="block text-lg font-semibold text-gray-700 mb-2">1. Upload Pet Photo (JPG/PNG)</label>
+                <input
+                    type="file"
+                    id="pet-image"
+                    accept="image/png, image/jpeg"
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100"
+                    onchange="handleImageUpload(event)"
+                />
+            </div>
+            
+            <!-- Step 2: Prompt Input -->
+            <div class="border-b pb-4 border-gray-100">
+                <label for="prompt-input" class="block text-lg font-semibold text-gray-700 mb-2">2. What should your pet wear?</label>
                 <input
                     type="text"
-                    id="user-input"
-                    placeholder="Type your message..."
-                    class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150"
-                    onkeydown="if(event.key === 'Enter') sendMessage()"
+                    id="prompt-input"
+                    placeholder="E.g., A tiny blue wizard hat and a yellow scarf"
+                    value="wearing a fancy tuxedo and sunglasses"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-150"
                 />
-                <button
-                    id="send-button"
-                    onclick="sendMessage()"
-                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-150 shadow-md disabled:bg-indigo-300"
-                >
-                    Send
-                </button>
+                <p class="text-xs text-gray-400 mt-1">Be specific! The AI needs clear instructions.</p>
             </div>
+
+            <!-- Step 3: Generate Button -->
+            <button
+                id="generate-button"
+                onclick="generateImage()"
+                class="w-full bg-pink-600 text-white px-6 py-3 rounded-lg font-extrabold text-xl hover:bg-pink-700 transition duration-150 shadow-lg disabled:bg-gray-400"
+                disabled
+            >
+                Generate Pet Photo
+            </button>
+        </div>
+
+        <!-- Result Display Area -->
+        <div class="mt-8 bg-white p-6 rounded-xl shadow-2xl">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4">Generated Image</h2>
+            <img id="output-image" src="" alt="Generated image of pet" class="w-full h-auto rounded-lg shadow-inner object-contain" />
         </div>
 
         <!-- Loading Indicator -->
-        <div id="loading-indicator" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white p-5 rounded-lg shadow-xl flex items-center space-x-3">
-                <svg class="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <div id="loading-indicator" class="hidden fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center space-y-3">
+                <svg class="animate-spin h-8 w-8 text-pink-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span class="text-gray-700">AI is thinking...</span>
+                <span class="text-gray-700 font-semibold">Generating pet's outfit... This can take up to 30 seconds.</span>
             </div>
         </div>
     </div>
 
     <script>
-        const chatWindow = document.getElementById('chat-window');
-        const userInput = document.getElementById('user-input');
-        const sendButton = document.getElementById('send-button');
+        let base64ImageData = null; // Stores the uploaded image data
+        
+        const outputImage = document.getElementById('output-image');
+        const petImageInput = document.getElementById('pet-image');
+        const promptInput = document.getElementById('prompt-input');
+        const generateButton = document.getElementById('generate-button');
         const loadingIndicator = document.getElementById('loading-indicator');
+
+        // --- API KEY CONFIGURATION ---
+        const apiKey = "AIzaSyAVdRadyfcXoDXps-6F0dQ_2O5xQxQ2xwI"; 
+        const isPublicHost = apiKey !== "AIzaSyAVdRadyfcXoDXps-6F0dQ_2O5xQxQ2xwI";
 
         // Helper function for exponential backoff during API calls
         async function fetchWithRetry(url, options, retries = 3) {
@@ -82,56 +101,93 @@
                 try {
                     const response = await fetch(url, options);
                     if (!response.ok) {
-                        // If the response is not successful, try again
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     return response;
                 } catch (error) {
                     if (i < retries - 1) {
-                        // Calculate exponential delay with jitter
                         const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
                         await new Promise(resolve => setTimeout(resolve, delay));
                     } else {
-                        // Re-throw the error on the last attempt
                         throw error;
                     }
                 }
             }
         }
+        
+        // Converts the uploaded file into a Base64 string for the API
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                base64ImageData = null;
+                generateButton.disabled = true;
+                return;
+            }
 
-        function createMessageElement(text, isUser) {
-            const container = document.createElement('div');
-            container.classList.add('flex', isUser ? 'justify-end' : 'justify-start');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // e.target.result is a data URL (e.g., "data:image/png;base64,....")
+                // We need to extract just the Base64 part for the API call
+                const dataUrl = e.target.result;
+                const parts = dataUrl.split(',');
+                base64ImageData = parts.length > 1 ? parts[1] : null;
 
-            const messageDiv = document.createElement('div');
-            messageDiv.innerHTML = text.replace(/\n/g, '<br>'); // Preserve line breaks
-            messageDiv.classList.add(isUser ? 'user-message' : 'assistant-message');
-            
-            container.appendChild(messageDiv);
-            chatWindow.appendChild(container);
-            
-            // Scroll to the bottom to see the new message
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+                // Also display a preview of the uploaded image
+                outputImage.src = dataUrl;
+                outputImage.style.backgroundColor = 'transparent';
+                
+                generateButton.disabled = !base64ImageData;
+            };
+            reader.readAsDataURL(file);
         }
 
-        async function sendMessage() {
-            const query = userInput.value.trim();
-            if (!query) return;
+        async function generateImage() {
+            const prompt = promptInput.value.trim();
 
-            // 1. Display user message and clear input
-            createMessageElement(query, true);
-            userInput.value = '';
-            userInput.disabled = true;
-            sendButton.disabled = true;
+            if (!base64ImageData) {
+                alert("Please upload an image first.");
+                return;
+            }
+            if (!prompt) {
+                alert("Please enter a description for the pet's clothes.");
+                return;
+            }
+            
+            // API Key Check for Public Hosting
+            if (!isPublicHost && typeof __initial_auth_token === 'undefined') {
+                outputImage.src = "https://placehold.co/600x400/FFCCCC/990000?text=API%20KEY%20MISSING";
+                alert("For public hosting, please replace 'YOUR_API_KEY_HERE' in the script with your Gemini API Key.");
+                return;
+            }
+
+
+            // 1. Set UI to Loading State
+            generateButton.disabled = true;
             loadingIndicator.classList.remove('hidden');
 
-            const apiKey = ""; // API key is provided by the environment
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-
+            const urlKey = (typeof __initial_auth_token !== 'undefined' || !isPublicHost) ? '' : `?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent${urlKey}`;
+            
             const payload = {
-                contents: [{ parts: [{ text: query }] }],
-                // We use Google Search grounding for real-time, grounded answers
-                tools: [{ "google_search": {} }],
+                contents: [
+                    {
+                        role: "user",
+                        parts: [
+                            // The text prompt tells the AI what to do
+                            { text: `Edit this image of a pet by making it look like it is ${prompt}. Maintain the pet's likeness and original composition.` },
+                            // The inline data provides the uploaded image
+                            {
+                                inlineData: {
+                                    mimeType: petImageInput.files[0].type,
+                                    data: base64ImageData
+                                }
+                            }
+                        ]
+                    }
+                ],
+                generationConfig: {
+                    responseModalities: ['TEXT', 'IMAGE']
+                },
             };
 
             const options = {
@@ -141,29 +197,29 @@
             };
 
             try {
-                // 2. Call the Gemini API using the retry helper
+                // 2. Call the Gemini Image API
                 const response = await fetchWithRetry(apiUrl, options);
                 const result = await response.json();
-
-                let assistantResponse = "Sorry, I encountered an issue. Please try again.";
-
-                const candidate = result.candidates?.[0];
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    assistantResponse = candidate.content.parts[0].text;
-                }
                 
-                // 3. Display assistant's response
-                createMessageElement(assistantResponse, false);
+                // 3. Extract Base64 image data from the response
+                const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+                if (base64Data) {
+                    const imageUrl = `data:image/png;base64,${base64Data}`;
+                    outputImage.src = imageUrl;
+                } else {
+                    outputImage.src = "https://placehold.co/600x400/E57373/FFFFFF?text=Generation+Failed";
+                    alert("Image generation failed. The AI may not have understood the request or the image.");
+                }
 
             } catch (error) {
-                console.error('Error during API call:', error);
-                createMessageElement("Error: Could not connect to the AI. Check the console for details.", false);
+                console.error('Error during image generation:', error);
+                outputImage.src = "https://placehold.co/600x400/E57373/FFFFFF?text=API+Error";
+                alert("An API error occurred. Check the console for details.");
             } finally {
                 // 4. Reset UI state
-                userInput.disabled = false;
-                sendButton.disabled = false;
+                generateButton.disabled = !base64ImageData;
                 loadingIndicator.classList.add('hidden');
-                userInput.focus(); // Focus the input for the next message
             }
         }
     </script>
