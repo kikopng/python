@@ -3,273 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dominant Color Analyzer</title>
-    <!-- Load Tailwind CSS for styling -->
+    <title>Gemini AI Chatbot</title>
+    <!-- Load Tailwind CSS for beautiful, responsive styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom font and basic body style */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb;
-            color: #1f2937;
+        /* Custom scrollbar styling for the chat window */
+        #chat-window {
+            height: 70vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
         }
-        /* Custom file input styling to look like a button */
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            cursor: pointer;
+        /* Style for the user and assistant messages */
+        .user-message {
+            @apply bg-indigo-500 text-white p-3 rounded-lg max-w-lg self-end;
         }
-        .file-input-wrapper input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
+        .assistant-message {
+            @apply bg-gray-200 text-gray-800 p-3 rounded-lg max-w-lg self-start;
         }
     </style>
 </head>
-<body class="min-h-screen p-4 flex items-center justify-center">
+<body class="bg-gray-50 min-h-screen font-sans">
 
-<div class="w-full max-w-lg bg-white p-6 md:p-8 rounded-xl shadow-2xl space-y-6">
-    <h1 class="text-3xl font-bold text-center text-blue-600">
-        Pixel Color Analyst (AI Powered)
-    </h1>
-    <p class="text-center text-gray-500">
-        Upload a photo and the AI will analyze it to find the greatest number of pixels of one color, and provide the name and hex code.
-    </p>
+    <div class="container mx-auto p-4 flex flex-col h-screen">
+        <header class="text-center py-4">
+            <h1 class="text-4xl font-extrabold text-indigo-700">🤖 Gemini Chat</h1>
+            <p class="text-gray-500 mt-1">Ask me anything!</p>
+        </header>
 
-    <!-- Upload/Capture Button -->
-    <div class="flex justify-center">
-        <div class="file-input-wrapper">
-            <button id="uploadButton" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md">
-                Upload or Take Photo
-            </button>
-            <!-- The 'capture=camera' attribute allows the iPhone to directly open the camera -->
-            <input type="file" id="imageInput" accept="image/*" capture="camera" />
+        <!-- Chat Display Area -->
+        <div id="chat-window" class="flex flex-col space-y-4 p-4 mb-4 bg-white shadow-xl rounded-xl ring-1 ring-gray-200">
+            <!-- Initial welcome message from the assistant -->
+            <div class="assistant-message">
+                Hello! I'm an AI powered by Gemini. How can I help you today?
+            </div>
         </div>
-    </div>
 
-    <!-- Status and Loading Area -->
-    <div id="statusMessage" class="text-center text-sm text-gray-700 h-6"></div>
-
-    <!-- Image Preview Area -->
-    <div id="previewContainer" class="hidden text-center">
-        <h2 class="text-xl font-semibold mb-3 text-gray-700">Image Preview</h2>
-        <img id="imagePreview" class="max-w-full h-auto mx-auto rounded-lg shadow-lg" src="" alt="Image Preview" style="max-height: 300px; object-fit: contain;">
-    </div>
-
-    <!-- Analysis Result Area -->
-    <div id="resultContainer" class="hidden bg-gray-50 p-4 rounded-lg border border-gray-200">
-        <h2 class="text-xl font-bold text-center mb-4 text-green-700">Analysis Complete!</h2>
-        
-        <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-            <!-- Color Swatch -->
-            <div id="colorSwatch" class="w-24 h-24 rounded-full shadow-xl border-4 border-white transition-all duration-300" style="background-color: #ffffff;"></div>
-            
-            <!-- Details -->
-            <div class="text-center sm:text-left">
-                <p class="text-lg font-medium text-gray-600">Dominant Color:</p>
-                <p id="colorName" class="text-3xl font-extrabold text-gray-800">---</p>
-                <p class="text-lg font-medium text-gray-600 mt-2">Hex Code:</p>
-                <p id="hexCode" class="text-2xl font-mono text-gray-800 bg-yellow-100 px-2 py-1 rounded-md inline-block">#FFFFFF</p>
-                <button onclick="copyToClipboard('hexCode')" class="ml-2 text-sm text-blue-500 hover:text-blue-700 transition duration-150">
-                    (Copy)
+        <!-- Input Area -->
+        <div class="mt-auto bg-white p-4 rounded-xl shadow-2xl sticky bottom-0">
+            <div class="flex items-center space-x-3">
+                <input
+                    type="text"
+                    id="user-input"
+                    placeholder="Type your message..."
+                    class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150"
+                    onkeydown="if(event.key === 'Enter') sendMessage()"
+                />
+                <button
+                    id="send-button"
+                    onclick="sendMessage()"
+                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-150 shadow-md disabled:bg-indigo-300"
+                >
+                    Send
                 </button>
             </div>
         </div>
-        <p id="aiSummary" class="mt-4 text-sm text-gray-500 text-center italic"></p>
+
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-5 rounded-lg shadow-xl flex items-center space-x-3">
+                <svg class="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-gray-700">AI is thinking...</span>
+            </div>
+        </div>
     </div>
-</div>
 
-<script type="module">
-    // Global variables (set by the Canvas environment)
-    const apiKey = "";
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
 
-    // DOM Elements
-    const imageInput = document.getElementById('imageInput');
-    const imagePreview = document.getElementById('imagePreview');
-    const previewContainer = document.getElementById('previewContainer');
-    const resultContainer = document.getElementById('resultContainer');
-    const statusMessage = document.getElementById('statusMessage');
-    const colorSwatch = document.getElementById('colorSwatch');
-    const colorName = document.getElementById('colorName');
-    const hexCode = document.getElementById('hexCode');
-    const aiSummary = document.getElementById('aiSummary');
-    const uploadButton = document.getElementById('uploadButton');
-
-    // --- Utility Functions ---
-
-    /** Converts a File/Blob object to a Base64 string for the API. */
-    function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                // The result is a data URL (e.g., "data:image/jpeg;base64,..."). 
-                // We only need the base64 part after the comma.
-                const base64String = reader.result.split(',')[1];
-                resolve(base64String);
-            };
-            reader.onerror = error => reject(error);
-            reader.readAsDataURL(file);
-        });
-    }
-
-    /** Exponential backoff retry logic for API calls */
-    async function fetchWithBackoff(url, options, retries = 5, delay = 1000) {
-        for (let i = 0; i < retries; i++) {
-            try {
-                const response = await fetch(url, options);
-                if (response.ok) {
+        // Helper function for exponential backoff during API calls
+        async function fetchWithRetry(url, options, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        // If the response is not successful, try again
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     return response;
+                } catch (error) {
+                    if (i < retries - 1) {
+                        // Calculate exponential delay with jitter
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    } else {
+                        // Re-throw the error on the last attempt
+                        throw error;
+                    }
                 }
-                if (response.status === 429 && i < retries - 1) { // Too Many Requests
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; // Exponential increase
-                    continue;
-                }
-                throw new Error(`API returned status ${response.status}`);
-            } catch (error) {
-                if (i === retries - 1) throw error;
-                await new Promise(resolve => setTimeout(resolve, delay));
-                delay *= 2;
             }
         }
-    }
 
-    /** Copies text to the clipboard using the older but safer execCommand method */
-    window.copyToClipboard = function(elementId) {
-        const copyText = document.getElementById(elementId);
-        const range = document.createRange();
-        range.selectNode(copyText);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        
-        try {
-            document.execCommand('copy');
-            statusMessage.textContent = `Copied ${copyText.textContent} to clipboard!`;
-            setTimeout(() => statusMessage.textContent = '', 2000);
-        } catch (err) {
-            statusMessage.textContent = 'Failed to copy text.';
-        }
-        window.getSelection().removeAllRanges(); // Deselect the text
-    }
+        function createMessageElement(text, isUser) {
+            const container = document.createElement('div');
+            container.classList.add('flex', isUser ? 'justify-end' : 'justify-start');
 
-
-    // --- Core Logic ---
-
-    imageInput.addEventListener('change', async function() {
-        const file = this.files[0];
-        if (!file) return;
-
-        // Reset UI
-        resultContainer.classList.add('hidden');
-        colorSwatch.style.backgroundColor = '#ffffff';
-        colorName.textContent = '---';
-        hexCode.textContent = '#FFFFFF';
-        aiSummary.textContent = '';
-        statusMessage.textContent = '';
-        uploadButton.disabled = true;
-
-        // 1. Show Preview
-        imagePreview.src = URL.createObjectURL(file);
-        previewContainer.classList.remove('hidden');
-
-        try {
-            statusMessage.textContent = 'Processing image... (1/2)';
-            const base64Data = await fileToBase64(file);
+            const messageDiv = document.createElement('div');
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>'); // Preserve line breaks
+            messageDiv.classList.add(isUser ? 'user-message' : 'assistant-message');
             
-            statusMessage.textContent = 'Analyzing image with AI... (2/2)';
+            container.appendChild(messageDiv);
+            chatWindow.appendChild(container);
+            
+            // Scroll to the bottom to see the new message
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
 
-            // 2. Define the System Prompt and JSON Schema
-            const systemPrompt = "You are a professional color analysis tool. Your task is to analyze the provided image, determine the single most frequently occurring, dominant color (the color occupying the greatest number of pixels), and output the result ONLY as a JSON object.";
+        async function sendMessage() {
+            const query = userInput.value.trim();
+            if (!query) return;
 
-            const userQuery = "Analyze the uploaded photo. Identify the single most dominant color (the color with the highest pixel count). Provide a descriptive name for the color and its corresponding hexadecimal code.";
+            // 1. Display user message and clear input
+            createMessageElement(query, true);
+            userInput.value = '';
+            userInput.disabled = true;
+            sendButton.disabled = true;
+            loadingIndicator.classList.remove('hidden');
+
+            const apiKey = ""; // API key is provided by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
             const payload = {
-                contents: [
-                    {
-                        role: "user",
-                        parts: [
-                            { 
-                                inlineData: {
-                                    mimeType: file.type,
-                                    data: base64Data
-                                }
-                            },
-                            { text: userQuery }
-                        ]
-                    }
-                ],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            "dominantColorName": { 
-                                "type": "STRING", 
-                                "description": "A descriptive name for the color (e.g., 'Azure Blue', 'Deep Crimson')." 
-                            },
-                            "hexCode": { 
-                                "type": "STRING", 
-                                "description": "The 6-digit hexadecimal code for the color, including the leading '#' symbol (e.g., '#4B0082')." 
-                            },
-                            "summary": {
-                                "type": "STRING",
-                                "description": "A short, engaging sentence explaining why this color is dominant in the photo, mentioning the subject matter."
-                            }
-                        },
-                        required: ["dominantColorName", "hexCode", "summary"]
-                    }
-                }
+                contents: [{ parts: [{ text: query }] }],
+                // We use Google Search grounding for real-time, grounded answers
+                tools: [{ "google_search": {} }],
             };
 
-            // 3. Call the API
-            const response = await fetchWithBackoff(apiUrl, {
+            const options = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
-            });
+            };
 
-            const result = await response.json();
+            try {
+                // 2. Call the Gemini API using the retry helper
+                const response = await fetchWithRetry(apiUrl, options);
+                const result = await response.json();
 
-            // 4. Extract and Display Results
-            const candidate = result.candidates?.[0];
+                let assistantResponse = "Sorry, I encountered an issue. Please try again.";
 
-            if (candidate && candidate.content?.parts?.[0]?.text) {
-                const jsonText = candidate.content.parts[0].text.trim();
-                const parsedJson = JSON.parse(jsonText);
+                const candidate = result.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    assistantResponse = candidate.content.parts[0].text;
+                }
                 
-                const dominantName = parsedJson.dominantColorName;
-                const hex = parsedJson.hexCode;
-                const summary = parsedJson.summary;
+                // 3. Display assistant's response
+                createMessageElement(assistantResponse, false);
 
-                colorSwatch.style.backgroundColor = hex;
-                colorName.textContent = dominantName;
-                hexCode.textContent = hex;
-                aiSummary.textContent = summary;
-
-                resultContainer.classList.remove('hidden');
-                statusMessage.textContent = 'Success! Analysis displayed below.';
-
-            } else {
-                throw new Error("AI response was empty or malformed.");
+            } catch (error) {
+                console.error('Error during API call:', error);
+                createMessageElement("Error: Could not connect to the AI. Check the console for details.", false);
+            } finally {
+                // 4. Reset UI state
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                loadingIndicator.classList.add('hidden');
+                userInput.focus(); // Focus the input for the next message
             }
-
-
-        } catch (error) {
-            console.error("Analysis Error:", error);
-            statusMessage.textContent = `Error during analysis. Please try a different photo. Details: ${error.message}`;
-        } finally {
-            uploadButton.disabled = false;
         }
-    });
-</script>
-
+    </script>
 </body>
 </html>
