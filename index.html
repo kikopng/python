@@ -29,6 +29,42 @@
             cursor: crosshair;
         }
 
+        /* --- START SCREEN (New) --- */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease;
+        }
+
+        .enter-btn {
+            border: 1px solid var(--primary-red);
+            background: transparent;
+            color: var(--text-main);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s;
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px var(--primary-red); }
+            50% { box-shadow: 0 0 20px var(--primary-red); }
+            100% { box-shadow: 0 0 5px var(--primary-red); }
+        }
+
         /* --- PROGRESS BAR --- */
         #progress-container {
             position: fixed;
@@ -51,14 +87,14 @@
         /* --- LANDING --- */
         #landing {
             height: 100vh;
-            display: flex;
+            display: none; /* Hidden initially */
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             z-index: 100;
             position: relative;
-            transition: opacity 1s ease, visibility 1s;
+            transition: opacity 1s ease;
         }
 
         .heart-btn {
@@ -154,7 +190,54 @@
             margin-top: 20px;
         }
 
-        /* --- LIGHTBOX (PHOTO ENLARGE) --- */
+        /* --- VIDEO OVERLAY --- */
+        #video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 5000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #player {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* The button that appears when video ends */
+        #continue-btn {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            background: rgba(244, 63, 94, 0.9);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            display: none; /* Hidden until video ends */
+            cursor: pointer;
+            z-index: 5002;
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.6);
+        }
+
+        /* --- PHOTO ZOOM --- */
         #lightbox {
             position: fixed;
             top: 0;
@@ -180,50 +263,6 @@
         @keyframes zoomIn {
             from { transform: scale(0.5); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
-        }
-
-        /* --- VIDEO OVERLAY (TRUE FULLSCREEN) --- */
-        #video-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: black;
-            z-index: 5000; /* Highest Layer */
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%; /* Takes full screen */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #player {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Close button inside video player */
-        .close-video-overlay {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: rgba(255,255,255,0.7);
-            background: rgba(0,0,0,0.5);
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 1rem;
-            cursor: pointer;
-            z-index: 5001;
-            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .play-btn {
@@ -261,17 +300,19 @@
     <!-- BGM File -->
     <audio id="bg-music" src="assets/bgm.mpeg" preload="auto" loop></audio>
 
-    <div id="progress-container">
-        <div id="progress-bar"></div>
+    <!-- 1. ENTRY SCREEN -->
+    <div id="start-screen">
+        <button class="enter-btn" onclick="enterSite()">Click to Begin</button>
+        <p style="margin-top: 15px; opacity: 0.5; font-size: 0.8rem;">(Turn up your volume)</p>
     </div>
 
-    <!-- LANDING SCREEN -->
+    <!-- 2. HEART LANDING SCREEN -->
     <section id="landing">
-        <button class="heart-btn" onclick="startExperience()">❤</button>
+        <button class="heart-btn" onclick="triggerVideo()">❤</button>
         <p class="landing-text">Click the heart for a surprise</p>
     </section>
 
-    <!-- CONTENT JOURNEY -->
+    <!-- 3. MAIN JOURNEY CONTENT -->
     <section id="journey">
         <div class="journey-header">
             <h1>Our Story - Cosplay Journey</h1>
@@ -319,19 +360,20 @@
         </div>
 
         <div style="text-align: center; padding-bottom: 100px;">
-            <button class="play-btn" onclick="openFinale()">Play Our MV Again</button>
+            <button class="play-btn" onclick="triggerVideo()">Play Our MV Again</button>
         </div>
     </section>
 
-    <!-- YOUTUBE VIDEO OVERLAY (FULLSCREEN) -->
+    <!-- YOUTUBE OVERLAY -->
     <div id="video-overlay">
-        <div class="close-video-overlay" onclick="closeFinale()">Exit Video</div>
         <div class="video-wrapper">
             <div id="player"></div>
         </div>
+        <!-- This button appears when video ends to ensure audio resumes -->
+        <button id="continue-btn" onclick="finishVideo()">Continue Our Journey</button>
     </div>
 
-    <!-- PHOTO ZOOM -->
+    <!-- LIGHTBOX -->
     <div id="lightbox" onclick="closeLightbox()">
         <img id="lightbox-img" src="" alt="Enlarged">
     </div>
@@ -343,19 +385,18 @@
         let player;
         let isVideoReady = false;
 
-        // 1. YouTube API Setup
+        // --- YOUTUBE API ---
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
                 videoId: 'K_7pvFuFPzk', 
                 playerVars: {
-                    'autoplay': 1,    // Try to autoplay
-                    'controls': 1,    // Show controls
-                    'rel': 0,         // No related videos at end
+                    'autoplay': 1,
+                    'controls': 1,
+                    'rel': 0,
                     'modestbranding': 1,
-                    'playsinline': 0, // 0 = Prefer native fullscreen on iOS
-                    'fs': 1           // Allow fullscreen button
+                    'playsinline': 1 // Keeps it inline so our overlay works
                 },
                 events: {
                     'onReady': onPlayerReady,
@@ -369,113 +410,91 @@
         }
 
         function onPlayerStateChange(event) {
-            // 0 means ENDED
+            // If video ends (State = 0)
             if (event.data === 0) {
-                closeFinale();
+                // Show the "Continue" button
+                // We DO NOT close automatically, because we need a click to resume audio
+                document.getElementById('continue-btn').style.display = 'block';
             }
         }
 
-        // 2. Start Experience (Triggered by Heart Click)
-        function startExperience() {
-            // Force browser fullscreen
-            toggleFullScreen(document.documentElement);
+        // --- STEP 1: ENTER SITE (First Interaction) ---
+        function enterSite() {
+            // 1. Hide Start Screen
+            const startScreen = document.getElementById('start-screen');
+            startScreen.style.opacity = '0';
+            setTimeout(() => { startScreen.style.display = 'none'; }, 800);
 
+            // 2. Start BGM immediately
+            audio.volume = 0.5; 
+            audio.play().catch(e => console.log("Audio waiting for interaction"));
+
+            // 3. Show Heart Landing
             const landing = document.getElementById('landing');
-            const journey = document.getElementById('journey');
-
-            // Play video immediately if user clicks
-            openFinale(); 
-
-            // Visual transition
-            landing.style.opacity = '0';
-            setTimeout(() => {
-                landing.classList.add('hidden');
-                journey.style.display = 'block';
-                setTimeout(() => {
-                    journey.style.opacity = '1';
-                    initScrollObserver();
-                }, 100);
-            }, 1000);
+            landing.style.display = 'flex';
         }
 
-        function openFinale() {
-            const overlay = document.getElementById('video-overlay');
-            overlay.style.display = 'flex';
-            
-            // Mute background music while video plays
+        // --- STEP 2: TRIGGER VIDEO (Heart Click) ---
+        function triggerVideo() {
+            // 1. Pause BGM (So video audio is clear)
             audio.pause();
 
-            // Attempt to play YouTube video
+            // 2. Open Video Overlay
+            document.getElementById('video-overlay').style.display = 'flex';
+            document.getElementById('continue-btn').style.display = 'none'; // Hide continue button initially
+
+            // 3. Go Fullscreen
+            toggleFullScreen(document.documentElement);
+
+            // 4. Play Video
             if (player && isVideoReady) {
                 player.playVideo();
-            } else {
-                // If loaded too fast, wait a split second
+            }
+        }
+
+        // --- STEP 3: FINISH VIDEO (User clicks "Continue") ---
+        function finishVideo() {
+            // 1. Hide Overlay
+            document.getElementById('video-overlay').style.display = 'none';
+
+            // 2. Exit Fullscreen
+            exitFullScreen();
+
+            // 3. RESUME BGM (This works because it's inside a click function)
+            audio.currentTime = 0; // Restart song or keep it paused position
+            audio.play();
+
+            // 4. Reveal Journey (if it's the first time)
+            const landing = document.getElementById('landing');
+            const journey = document.getElementById('journey');
+            
+            if (landing.style.display !== 'none') {
+                landing.style.opacity = '0';
                 setTimeout(() => {
-                    if (player && player.playVideo) player.playVideo();
+                    landing.style.display = 'none';
+                    journey.style.display = 'block';
+                    setTimeout(() => {
+                        journey.style.opacity = '1';
+                        initScrollObserver();
+                    }, 100);
                 }, 500);
             }
         }
 
-        function closeFinale() {
-            const overlay = document.getElementById('video-overlay');
-            overlay.style.display = 'none';
-
-            // Stop video
-            if (player && player.stopVideo) {
-                player.stopVideo();
-            }
-
-            // Exit Fullscreen to return to page view
-            exitFullScreen();
-
-            // RESUME BGM
-            // We use a promise because browsers sometimes block audio restart without a direct click
-            let playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    // Autoplay started!
-                }).catch(error => {
-                    console.log("Audio resume prevented by browser. Waiting for interaction.");
-                    // Fallback: The next click anywhere on page (spawnHearts) triggers audio
-                    document.body.addEventListener('click', resumeAudioOnce);
-                });
-            }
-        }
-
-        // Helper for audio fallback
-        function resumeAudioOnce() {
-            audio.play();
-            document.body.removeEventListener('click', resumeAudioOnce);
-        }
-
-        // 3. Fullscreen Logic (Browser Native)
+        // --- UTILS ---
         function toggleFullScreen(elem) {
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { /* IE11 */
-                elem.msRequestFullscreen();
-            }
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
         }
 
         function exitFullScreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) { /* Safari */
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) { /* IE11 */
-                document.msExitFullscreen();
-            }
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
         }
 
-        // 4. Image Interactions
         function openLightbox(src) {
-            const lb = document.getElementById('lightbox');
             document.getElementById('lightbox-img').src = src;
-            lb.style.display = 'flex';
-            // Heart burst effect
-            for(let i=0; i<15; i++) spawnHearts({ clientX: window.innerWidth/2, clientY: window.innerHeight/2 });
+            document.getElementById('lightbox').style.display = 'flex';
         }
 
         function closeLightbox() {
@@ -483,8 +502,7 @@
         }
 
         function spawnHearts(e) {
-            // Avoid spawning hearts if clicking specific controls
-            if(e.target.closest('.play-btn') || e.target.closest('.heart-btn') || e.target.closest('.img-container')) return;
+            if(e.target.closest('.play-btn') || e.target.closest('.heart-btn') || e.target.closest('.enter-btn') || e.target.closest('.img-container')) return;
 
             const colors = ['#f43f5e', '#fb7185', '#fbbf24', '#ffffff'];
             const heart = document.createElement('div');
