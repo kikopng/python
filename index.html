@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For My Everything</title>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -28,18 +27,6 @@
             font-family: 'Montserrat', sans-serif;
             overflow-x: hidden;
             cursor: crosshair;
-        }
-
-        /* --- BACKGROUND PARTICLES --- */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.3;
         }
 
         /* --- PROGRESS BAR --- */
@@ -85,10 +72,6 @@
             border: none;
         }
 
-        .heart-btn:hover {
-            transform: scale(1.1);
-        }
-
         @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.1); opacity: 0.7; }
@@ -121,15 +104,16 @@
 
         .journey-header h1 {
             font-family: 'Dancing Script', cursive;
-            font-size: 4rem;
+            font-size: 3.5rem;
             color: var(--text-main);
             margin-bottom: 20px;
         }
 
+        /* --- PHOTO CARDS --- */
         .memory-card {
             margin-bottom: 200px;
             position: relative;
-            padding-left: 40px;
+            padding: 0 20px;
             opacity: 0;
             transform: translateY(50px);
             transition: all 1s ease;
@@ -140,16 +124,6 @@
             transform: translateY(0);
         }
 
-        .memory-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 1px;
-            background: linear-gradient(transparent, var(--primary-red), transparent);
-        }
-
         .img-container {
             width: 100%;
             border-radius: 20px;
@@ -157,65 +131,59 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             background: #111;
+            cursor: zoom-in;
+            position: relative;
         }
 
         .img-container img {
             width: 100%;
             display: block;
-            filter: grayscale(100%) brightness(0.6);
-            transition: all 1.5s ease;
+            filter: grayscale(30%) brightness(0.9);
+            transition: all 0.8s ease;
         }
 
         .memory-card:hover img {
             filter: grayscale(0%) brightness(1);
-            transform: scale(1.05);
-        }
-
-        .caption {
-            margin-top: 25px;
+            transform: scale(1.03);
         }
 
         .caption h2 {
             font-family: 'Dancing Script', cursive;
             font-size: 2.5rem;
             color: var(--primary-red);
+            margin-top: 20px;
         }
 
-        .caption p {
-            font-weight: 200;
-            font-size: 0.9rem;
-            color: #ccc;
-            margin-top: 10px;
-            line-height: 1.6;
+        /* --- LIGHTBOX (PHOTO ENLARGE) --- */
+        #lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            cursor: zoom-out;
         }
 
-        /* --- FINALE --- */
-        #finale-btn-container {
-            text-align: center;
-            padding: 100px 0;
+        #lightbox img {
+            max-width: 90%;
+            max-height: 85%;
+            border: 2px solid var(--primary-red);
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(244, 63, 94, 0.4);
+            animation: zoomIn 0.3s ease-out;
         }
 
-        .play-btn {
-            background: none;
-            border: 1px solid var(--primary-red);
-            color: var(--primary-red);
-            padding: 20px 40px;
-            border-radius: 50px;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            cursor: pointer;
-            transition: all 0.5s ease;
-            position: relative;
-            overflow: hidden;
+        @keyframes zoomIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
-        .play-btn:hover {
-            background: var(--primary-red);
-            color: white;
-            box-shadow: 0 0 30px var(--primary-red);
-        }
-
+        /* --- VIDEO OVERLAY (Optimized for Shorts) --- */
         #video-overlay {
             position: fixed;
             top: 0;
@@ -230,31 +198,59 @@
             align-items: center;
         }
 
-        video {
-            width: 90%;
-            max-width: 900px;
-            border-radius: 10px;
-            box-shadow: 0 0 50px rgba(244, 63, 94, 0.3);
+        .video-wrapper {
+            position: relative;
+            height: 80vh;
+            aspect-ratio: 9/16;
+            box-shadow: 0 0 50px rgba(244, 63, 94, 0.5);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        #player {
+            width: 100%;
+            height: 100%;
+        }
+
+        .play-btn {
+            background: none;
+            border: 1px solid var(--primary-red);
+            color: var(--primary-red);
+            padding: 18px 35px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-top: 50px;
+        }
+
+        .play-btn:hover {
+            background: var(--primary-red);
+            color: white;
+            box-shadow: 0 0 30px var(--primary-red);
         }
 
         .close-video {
-            margin-top: 30px;
-            color: #555;
-            text-transform: uppercase;
-            font-size: 0.6rem;
-            letter-spacing: 2px;
+            margin-top: 20px;
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 0.8rem;
             cursor: pointer;
         }
 
-        /* --- PARTICLES --- */
-        .click-heart {
+        /* --- HEART EXPLOSION PARTICLES --- */
+        .particle {
             position: fixed;
             pointer-events: none;
-            z-index: 999;
-            animation: fall 1s ease-out forwards;
+            z-index: 9999;
+            animation: explode 1s ease-out forwards;
         }
 
-        @keyframes fall {
+        @keyframes explode {
             0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
             100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
         }
@@ -262,124 +258,179 @@
         .hidden { display: none !important; }
     </style>
 </head>
-<body onclick="spawnHearts(event)">
+<body onclick="createBurst(event)">
 
-    <audio id="bg-music" src="assets/song.mp3" loop></audio>
+    <audio id="bg-music" src="assets/bgm.mpeg" loop></audio>
 
     <div id="progress-container">
         <div id="progress-bar"></div>
     </div>
 
-    <!-- LANDING SECTION -->
     <section id="landing">
         <button class="heart-btn" onclick="startExperience()">❤</button>
-        <p class="landing-text">For your eyes only</p>
+        <p class="landing-text">Click the heart for a surprise</p>
     </section>
 
-    <!-- JOURNEY SECTION -->
     <section id="journey">
         <div class="journey-header">
-            <h1>Our Story</h1>
-            <p style="opacity: 0.4; font-size: 0.8rem; letter-spacing: 2px;">SCROLL TO RE-LIVE</p>
+            <h1>Our Story - Cosplay Journey</h1>
+            <p style="opacity: 0.5; font-size: 0.8rem; letter-spacing: 2px; margin-top: 10px;">这些年谢谢你陪我颠，我们要一起好好地下去</p>
         </div>
 
         <div class="memory-card" data-progress="25">
-            <div class="img-container">
+            <div class="img-container" onclick="openLightbox('assets/photo1.jpg')">
                 <img src="assets/photo1.jpg" alt="Memory 1">
             </div>
             <div class="caption">
                 <h2>The Beginning</h2>
-                <p>I still remember exactly where we were when I realized it was you. Every moment since then has been a dream I never want to wake up from.</p>
+                <p>Our first official cosplay together! It was fun!</p>
             </div>
         </div>
 
         <div class="memory-card" data-progress="50">
-            <div class="img-container">
+            <div class="img-container" onclick="openLightbox('assets/photo2.jpg')">
                 <img src="assets/photo2.jpg" alt="Memory 2">
             </div>
             <div class="caption">
-                <h2>The Adventures</h2>
-                <p>From the long drives to the quiet nights in, you make every ordinary day feel extraordinary. There's nobody else I'd rather explore the world with.</p>
+                <h2>The Demon Slayers</h2>
+                <p>Our second official cosplay! Hahahahah ignore my face, I was acting cool because I am cosplaying Giyu. You were sooo cuteeee!</p>
             </div>
         </div>
 
         <div class="memory-card" data-progress="75">
-            <div class="img-container">
+            <div class="img-container" onclick="openLightbox('assets/photo3.jpg')">
                 <img src="assets/photo3.jpg" alt="Memory 3">
             </div>
             <div class="caption">
-                <h2>The Laughs</h2>
-                <p>Your smile is my favorite view. I've saved every inside joke and every laugh we've shared like it's a treasure—because it is.</p>
+                <h2>The Sleeping Beauty</h2>
+                <p>Our third official cosplay!!! Hahahaha wearing the shirt that I gave, reading the book I wrote, sleeping on the car I drove, 是不是很好睡！我要继续把你变的更好！</p>
             </div>
         </div>
 
-        <div class="memory-card" data-progress="90">
-            <div class="img-container">
+        <div class="memory-card" data-progress="95">
+            <div class="img-container" onclick="openLightbox('assets/photo4.jpg')">
                 <img src="assets/photo4.jpg" alt="Memory 4">
             </div>
             <div class="caption">
-                <h2>Always Us</h2>
-                <p>Through every season, you've been my constant. This is just the beginning of our forever, and I'm so lucky to be the one by your side.</p>
+                <h2>Others</h2>
+                <p>I was scrolling through our photos and memories, and I found this photo! I think it is very cute hahahahahha. Angie, I love you!</p>
             </div>
         </div>
 
-        <div id="finale-btn-container">
-            <button class="play-btn" onclick="openFinale()">Play Our Song</button>
+        <div style="text-align: center; padding-bottom: 100px;">
+            <button class="play-btn" onclick="openFinale()">Play Our MV Again</button>
         </div>
     </section>
 
-    <!-- VIDEO OVERLAY -->
     <div id="video-overlay">
-        <video id="final-video" controls>
-            <source src="assets/video.mp4" type="video/mp4">
-        </video>
-        <div class="close-video" onclick="closeFinale()">Close Surprise</div>
+        <div class="video-wrapper">
+            <div id="player"></div>
+        </div>
+        <div class="close-video" onclick="closeFinale()">Back to Our Memories</div>
     </div>
 
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Enlarged">
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
-        // --- 1. START EXPERIENCE ---
+        const audio = document.getElementById('bg-music');
+        let player;
+
+        // --- 1. YOUTUBE API SETUP ---
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                // ⚠️ PASTE YOUR VIDEO ID HERE (The part after /shorts/)
+                videoId: 'K_7pvFuFPzk', 
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 1,
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'playsinline': 1
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            // Auto-close overlay and resume BGM when video ends
+            if (event.data == YT.PlayerState.ENDED) {
+                closeFinale();
+            }
+        }
+
+        // --- 2. TRANSITION LOGIC ---
         function startExperience() {
             const landing = document.getElementById('landing');
             const journey = document.getElementById('journey');
-            const audio = document.getElementById('bg-music');
 
             landing.style.opacity = '0';
             setTimeout(() => {
                 landing.classList.add('hidden');
                 journey.style.display = 'block';
-                setTimeout(() => journey.style.opacity = '1', 100);
-                
-                // Audio plays after interaction
-                audio.volume = 0.3;
-                audio.play();
-                
+                setTimeout(() => {
+                    journey.style.opacity = '1';
+                    openFinale(); // Start with MV
+                }, 100);
                 initScrollObserver();
             }, 1000);
         }
 
-        // --- 2. HEARTBURST EFFECT ---
-        function spawnHearts(e) {
-            const colors = ['#f43f5e', '#fb7185', '#fbbf24', '#ffffff'];
+        function openFinale() {
+            document.getElementById('video-overlay').style.display = 'flex';
+            audio.pause(); // Mute BGM
+            if (player && player.playVideo) player.playVideo();
+        }
+
+        function closeFinale() {
+            document.getElementById('video-overlay').style.display = 'none';
+            if (player && player.pauseVideo) player.pauseVideo();
+            audio.play(); // Resume BGM
+        }
+
+        // --- 3. PHOTO INTERACTIONS ---
+        function openLightbox(src) {
+            const lb = document.getElementById('lightbox');
+            document.getElementById('lightbox-img').src = src;
+            lb.style.display = 'flex';
+            
+            // Interaction: Burst of hearts when opening
+            for(let i=0; i<15; i++) createBurst({ clientX: window.innerWidth/2, clientY: window.innerHeight/2 });
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        function createBurst(e) {
+            const colors = ['#f43f5e', '#fbbf24', '#ffffff'];
             for (let i = 0; i < 8; i++) {
-                const heart = document.createElement('div');
-                heart.className = 'click-heart';
-                heart.innerHTML = Math.random() > 0.5 ? '❤' : '✨';
-                heart.style.left = e.clientX + 'px';
-                heart.style.top = e.clientY + 'px';
-                heart.style.color = colors[Math.floor(Math.random() * colors.length)];
-                heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerHTML = Math.random() > 0.5 ? '❤' : '✨';
+                p.style.left = e.clientX + 'px';
+                p.style.top = e.clientY + 'px';
+                p.style.color = colors[Math.floor(Math.random() * colors.length)];
+                p.style.fontSize = (Math.random() * 20 + 10) + 'px';
                 
-                const tx = (Math.random() - 0.5) * 200 + 'px';
-                const ty = (Math.random() - 0.5) * 200 + 'px';
-                heart.style.setProperty('--tx', tx);
-                heart.style.setProperty('--ty', ty);
+                const tx = (Math.random() - 0.5) * 300 + 'px';
+                const ty = (Math.random() - 0.5) * 300 + 'px';
+                p.style.setProperty('--tx', tx);
+                p.style.setProperty('--ty', ty);
                 
-                document.body.appendChild(heart);
-                setTimeout(() => heart.remove(), 1000);
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1000);
             }
         }
 
-        // --- 3. SCROLL OBSERVER ---
+        // --- 4. SCROLL PROGRESS ---
         function initScrollObserver() {
             const cards = document.querySelectorAll('.memory-card');
             const progressBar = document.getElementById('progress-bar');
@@ -388,34 +439,12 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('visible');
-                        const prog = entry.target.getAttribute('data-progress');
-                        progressBar.style.width = prog + '%';
+                        progressBar.style.width = entry.target.getAttribute('data-progress') + '%';
                     }
                 });
-            }, { threshold: 0.3 });
+            }, { threshold: 0.2 });
 
             cards.forEach(card => observer.observe(card));
-        }
-
-        // --- 4. FINALE LOGIC ---
-        function openFinale() {
-            const overlay = document.getElementById('video-overlay');
-            const video = document.getElementById('final-video');
-            const audio = document.getElementById('bg-music');
-
-            overlay.style.display = 'flex';
-            audio.pause(); // Pause bg music to hear video
-            video.play();
-        }
-
-        function closeFinale() {
-            const overlay = document.getElementById('video-overlay');
-            const video = document.getElementById('final-video');
-            const audio = document.getElementById('bg-music');
-
-            overlay.style.display = 'none';
-            video.pause();
-            audio.play();
         }
     </script>
 </body>
