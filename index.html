@@ -99,7 +99,7 @@
 
         .journey-header {
             text-align: center;
-            margin-bottom: 150px;
+            margin-bottom: 100px;
         }
 
         .journey-header h1 {
@@ -111,7 +111,7 @@
 
         /* --- PHOTO CARDS --- */
         .memory-card {
-            margin-bottom: 200px;
+            margin-bottom: 150px;
             position: relative;
             padding: 0 20px;
             opacity: 0;
@@ -132,7 +132,6 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             background: #111;
             cursor: zoom-in;
-            position: relative;
         }
 
         .img-container img {
@@ -174,7 +173,6 @@
             max-height: 85%;
             border: 2px solid var(--primary-red);
             border-radius: 10px;
-            box-shadow: 0 0 50px rgba(244, 63, 94, 0.4);
             animation: zoomIn 0.3s ease-out;
         }
 
@@ -183,7 +181,7 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        /* --- VIDEO OVERLAY (Optimized for Shorts) --- */
+        /* --- VIDEO OVERLAY (FULL SCREEN SHORTS) --- */
         #video-overlay {
             position: fixed;
             top: 0;
@@ -200,7 +198,7 @@
 
         .video-wrapper {
             position: relative;
-            height: 80vh;
+            height: 90vh;
             aspect-ratio: 9/16;
             box-shadow: 0 0 50px rgba(244, 63, 94, 0.5);
             border-radius: 15px;
@@ -223,34 +221,28 @@
             letter-spacing: 3px;
             cursor: pointer;
             transition: all 0.4s ease;
-            margin-top: 50px;
-        }
-
-        .play-btn:hover {
-            background: var(--primary-red);
-            color: white;
-            box-shadow: 0 0 30px var(--primary-red);
+            margin-top: 30px;
         }
 
         .close-video {
-            margin-top: 20px;
+            margin-top: 15px;
             color: #fff;
             background: rgba(255,255,255,0.1);
-            padding: 12px 25px;
+            padding: 10px 20px;
             border-radius: 30px;
             font-size: 0.8rem;
             cursor: pointer;
         }
 
-        /* --- HEART EXPLOSION PARTICLES --- */
-        .particle {
+        /* --- PARTICLES --- */
+        .click-heart {
             position: fixed;
             pointer-events: none;
             z-index: 9999;
-            animation: explode 1s ease-out forwards;
+            animation: fall 1.2s ease-out forwards;
         }
 
-        @keyframes explode {
+        @keyframes fall {
             0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
             100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
         }
@@ -258,7 +250,7 @@
         .hidden { display: none !important; }
     </style>
 </head>
-<body onclick="createBurst(event)">
+<body onclick="spawnHearts(event)">
 
     <audio id="bg-music" src="assets/bgm.mpeg" loop></audio>
 
@@ -293,7 +285,7 @@
             </div>
             <div class="caption">
                 <h2>The Demon Slayers</h2>
-                <p>Our second official cosplay! Hahahahah ignore my face, I was acting cool because I am cosplaying Giyu. You were sooo cuteeee!</p>
+                <p>Our second official cosplay! You were sooo cuteeee!</p>
             </div>
         </div>
 
@@ -303,7 +295,7 @@
             </div>
             <div class="caption">
                 <h2>The Sleeping Beauty</h2>
-                <p>Our third official cosplay!!! Hahahaha wearing the shirt that I gave, reading the book I wrote, sleeping on the car I drove, 是不是很好睡！我要继续把你变的更好！</p>
+                <p>是不是很好睡！我要继续把你变的更好！</p>
             </div>
         </div>
 
@@ -312,8 +304,8 @@
                 <img src="assets/photo4.jpg" alt="Memory 4">
             </div>
             <div class="caption">
-                <h2>Others</h2>
-                <p>I was scrolling through our photos and memories, and I found this photo! I think it is very cute hahahahahha. Angie, I love you!</p>
+                <h2>Always Us</h2>
+                <p>Angie, I love you!</p>
             </div>
         </div>
 
@@ -339,12 +331,11 @@
         const audio = document.getElementById('bg-music');
         let player;
 
-        // --- 1. YOUTUBE API SETUP ---
+        // 1. Setup Player
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
-                // ⚠️ PASTE YOUR VIDEO ID HERE (The part after /shorts/)
                 videoId: 'K_7pvFuFPzk', 
                 playerVars: {
                     'autoplay': 0,
@@ -360,13 +351,12 @@
         }
 
         function onPlayerStateChange(event) {
-            // Auto-close overlay and resume BGM when video ends
             if (event.data == YT.PlayerState.ENDED) {
                 closeFinale();
             }
         }
 
-        // --- 2. TRANSITION LOGIC ---
+        // 2. Start Logic - Play Video Automatically on Button Click
         function startExperience() {
             const landing = document.getElementById('landing');
             const journey = document.getElementById('journey');
@@ -377,7 +367,7 @@
                 journey.style.display = 'block';
                 setTimeout(() => {
                     journey.style.opacity = '1';
-                    openFinale(); // Start with MV
+                    openFinale(); // Triggers the video immediately
                 }, 100);
                 initScrollObserver();
             }, 1000);
@@ -386,55 +376,53 @@
         function openFinale() {
             document.getElementById('video-overlay').style.display = 'flex';
             audio.pause(); // Mute BGM
-            if (player && player.playVideo) player.playVideo();
+            if (player && player.playVideo) {
+                player.playVideo();
+            }
         }
 
         function closeFinale() {
             document.getElementById('video-overlay').style.display = 'none';
-            if (player && player.pauseVideo) player.pauseVideo();
+            if (player && player.pauseVideo) {
+                player.pauseVideo();
+            }
             audio.play(); // Resume BGM
         }
 
-        // --- 3. PHOTO INTERACTIONS ---
+        // 3. Image Interactions
         function openLightbox(src) {
             const lb = document.getElementById('lightbox');
             document.getElementById('lightbox-img').src = src;
             lb.style.display = 'flex';
-            
-            // Interaction: Burst of hearts when opening
-            for(let i=0; i<15; i++) createBurst({ clientX: window.innerWidth/2, clientY: window.innerHeight/2 });
+            // Heart burst effect when enlarging photo
+            for(let i=0; i<15; i++) spawnHearts({ clientX: window.innerWidth/2, clientY: window.innerHeight/2 });
         }
 
         function closeLightbox() {
             document.getElementById('lightbox').style.display = 'none';
         }
 
-        function createBurst(e) {
-            const colors = ['#f43f5e', '#fbbf24', '#ffffff'];
-            for (let i = 0; i < 8; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                p.innerHTML = Math.random() > 0.5 ? '❤' : '✨';
-                p.style.left = e.clientX + 'px';
-                p.style.top = e.clientY + 'px';
-                p.style.color = colors[Math.floor(Math.random() * colors.length)];
-                p.style.fontSize = (Math.random() * 20 + 10) + 'px';
-                
-                const tx = (Math.random() - 0.5) * 300 + 'px';
-                const ty = (Math.random() - 0.5) * 300 + 'px';
-                p.style.setProperty('--tx', tx);
-                p.style.setProperty('--ty', ty);
-                
-                document.body.appendChild(p);
-                setTimeout(() => p.remove(), 1000);
-            }
+        function spawnHearts(e) {
+            const colors = ['#f43f5e', '#fb7185', '#fbbf24', '#ffffff'];
+            const heart = document.createElement('div');
+            heart.className = 'click-heart';
+            heart.innerHTML = '❤';
+            heart.style.left = e.clientX + 'px';
+            heart.style.top = e.clientY + 'px';
+            heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+            
+            const tx = (Math.random() - 0.5) * 400 + 'px';
+            const ty = (Math.random() - 0.5) * 400 + 'px';
+            heart.style.setProperty('--tx', tx);
+            heart.style.setProperty('--ty', ty);
+            
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1200);
         }
 
-        // --- 4. SCROLL PROGRESS ---
         function initScrollObserver() {
             const cards = document.querySelectorAll('.memory-card');
             const progressBar = document.getElementById('progress-bar');
-            
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -443,7 +431,6 @@
                     }
                 });
             }, { threshold: 0.2 });
-
             cards.forEach(card => observer.observe(card));
         }
     </script>
