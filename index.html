@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>For My Everything</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
     <style>
@@ -29,104 +29,64 @@
             cursor: crosshair;
         }
 
-        /* --- START SCREEN (New) --- */
-        #start-screen {
+        /* --- VIDEO OVERLAY (First Thing User Sees) --- */
+        #video-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 100vw;
             height: 100vh;
-            background: #000;
-            z-index: 9999;
-            display: flex;
+            background: black;
+            z-index: 10000; /* Highest priority */
+            display: flex; /* Visible by default */
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.8s ease;
         }
 
-        .enter-btn {
-            border: 1px solid var(--primary-red);
-            background: transparent;
-            color: var(--text-main);
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            cursor: pointer;
-            border-radius: 50px;
-            transition: all 0.3s;
-            animation: glow 2s infinite;
-        }
-
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px var(--primary-red); }
-            50% { box-shadow: 0 0 20px var(--primary-red); }
-            100% { box-shadow: 0 0 5px var(--primary-red); }
-        }
-
-        /* --- PROGRESS BAR --- */
-        #progress-container {
-            position: fixed;
+        .video-wrapper {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            z-index: 1000;
-        }
-
-        #progress-bar {
             height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--deep-red), var(--primary-red), var(--gold));
-            box-shadow: 0 0 10px var(--primary-red);
-            transition: width 0.4s ease;
         }
 
-        /* --- LANDING --- */
-        #landing {
-            height: 100vh;
-            display: none; /* Hidden initially */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            z-index: 100;
-            position: relative;
-            transition: opacity 1s ease;
+        #player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        .heart-btn {
-            font-size: 80px;
-            color: var(--primary-red);
+        /* The button that appears when video ends */
+        #continue-btn {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 40px;
+            background: rgba(244, 63, 94, 0.9);
+            color: white;
+            border: 1px solid #fff;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            display: none; /* Hidden until video ends */
             cursor: pointer;
-            filter: drop-shadow(0 0 20px rgba(244, 63, 94, 0.5));
-            animation: pulse 2s infinite;
-            transition: transform 0.3s ease;
-            background: none;
-            border: none;
-            outline: none;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .landing-text {
-            margin-top: 30px;
-            letter-spacing: 5px;
+            z-index: 10001;
+            box-shadow: 0 0 30px rgba(244, 63, 94, 0.8);
             text-transform: uppercase;
-            font-size: 0.7rem;
-            color: var(--primary-red);
-            opacity: 0.6;
+            animation: fadeIn 0.5s ease;
         }
 
-        /* --- JOURNEY --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* --- JOURNEY CONTENT (Hidden Initially) --- */
         #journey {
-            display: none;
+            display: none; /* Hidden behind video */
             max-width: 700px;
             margin: 0 auto;
             padding: 100px 20px;
@@ -146,7 +106,7 @@
             margin-bottom: 20px;
         }
 
-        /* --- PHOTO CARDS --- */
+        /* --- MEMORY CARDS --- */
         .memory-card {
             margin-bottom: 150px;
             position: relative;
@@ -190,54 +150,26 @@
             margin-top: 20px;
         }
 
-        /* --- VIDEO OVERLAY --- */
-        #video-overlay {
+        /* --- PROGRESS BAR --- */
+        #progress-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 1000;
+        }
+
+        #progress-bar {
             height: 100%;
-            background: black;
-            z-index: 5000;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            width: 0%;
+            background: linear-gradient(90deg, var(--deep-red), var(--primary-red), var(--gold));
+            box-shadow: 0 0 10px var(--primary-red);
+            transition: width 0.4s ease;
         }
 
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #player {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* The button that appears when video ends */
-        #continue-btn {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 30px;
-            background: rgba(244, 63, 94, 0.9);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-size: 1rem;
-            display: none; /* Hidden until video ends */
-            cursor: pointer;
-            z-index: 5002;
-            box-shadow: 0 0 20px rgba(244, 63, 94, 0.6);
-        }
-
-        /* --- PHOTO ZOOM --- */
+        /* --- LIGHTBOX --- */
         #lightbox {
             position: fixed;
             top: 0;
@@ -291,8 +223,6 @@
             0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
             100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
         }
-
-        .hidden { display: none !important; }
     </style>
 </head>
 <body onclick="spawnHearts(event)">
@@ -300,19 +230,20 @@
     <!-- BGM File -->
     <audio id="bg-music" src="assets/bgm.mpeg" preload="auto" loop></audio>
 
-    <!-- 1. ENTRY SCREEN -->
-    <div id="start-screen">
-        <button class="enter-btn" onclick="enterSite()">Click to Begin</button>
-        <p style="margin-top: 15px; opacity: 0.5; font-size: 0.8rem;">(Turn up your volume)</p>
+    <div id="progress-container">
+        <div id="progress-bar"></div>
     </div>
 
-    <!-- 2. HEART LANDING SCREEN -->
-    <section id="landing">
-        <button class="heart-btn" onclick="triggerVideo()">❤</button>
-        <p class="landing-text">Click the heart for a surprise</p>
-    </section>
+    <!-- 1. VIDEO OVERLAY (Starts Immediately) -->
+    <div id="video-overlay">
+        <div class="video-wrapper">
+            <div id="player"></div>
+        </div>
+        <!-- Button appears when video ends -->
+        <button id="continue-btn" onclick="finishVideo()">Continue Our Journey</button>
+    </div>
 
-    <!-- 3. MAIN JOURNEY CONTENT -->
+    <!-- 2. MAIN CONTENT (Hidden until video ends) -->
     <section id="journey">
         <div class="journey-header">
             <h1>Our Story - Cosplay Journey</h1>
@@ -360,18 +291,9 @@
         </div>
 
         <div style="text-align: center; padding-bottom: 100px;">
-            <button class="play-btn" onclick="triggerVideo()">Play Our MV Again</button>
+            <button class="play-btn" onclick="replayVideo()">Play Our MV Again</button>
         </div>
     </section>
-
-    <!-- YOUTUBE OVERLAY -->
-    <div id="video-overlay">
-        <div class="video-wrapper">
-            <div id="player"></div>
-        </div>
-        <!-- This button appears when video ends to ensure audio resumes -->
-        <button id="continue-btn" onclick="finishVideo()">Continue Our Journey</button>
-    </div>
 
     <!-- LIGHTBOX -->
     <div id="lightbox" onclick="closeLightbox()">
@@ -383,20 +305,19 @@
     <script>
         const audio = document.getElementById('bg-music');
         let player;
-        let isVideoReady = false;
 
-        // --- YOUTUBE API ---
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
                 videoId: 'K_7pvFuFPzk', 
                 playerVars: {
-                    'autoplay': 1,
-                    'controls': 1,
+                    'autoplay': 1,      // Attempt autoplay
+                    'controls': 1,      // Show controls so user can unmute/play if blocked
                     'rel': 0,
                     'modestbranding': 1,
-                    'playsinline': 1 // Keeps it inline so our overlay works
+                    'playsinline': 1,   // REQUIRED for iOS to respect your CSS sizing
+                    'fs': 1
                 },
                 events: {
                     'onReady': onPlayerReady,
@@ -406,92 +327,62 @@
         }
 
         function onPlayerReady(event) {
-            isVideoReady = true;
+            // Attempt to play immediately
+            event.target.playVideo();
         }
 
         function onPlayerStateChange(event) {
-            // If video ends (State = 0)
+            // State 0 = Video Ended
             if (event.data === 0) {
-                // Show the "Continue" button
-                // We DO NOT close automatically, because we need a click to resume audio
                 document.getElementById('continue-btn').style.display = 'block';
             }
         }
 
-        // --- STEP 1: ENTER SITE (First Interaction) ---
-        function enterSite() {
-            // 1. Hide Start Screen
-            const startScreen = document.getElementById('start-screen');
-            startScreen.style.opacity = '0';
-            setTimeout(() => { startScreen.style.display = 'none'; }, 800);
+        // --- TRANSITION: Video -> Content ---
+        function finishVideo() {
+            const overlay = document.getElementById('video-overlay');
+            const journey = document.getElementById('journey');
 
-            // 2. Start BGM immediately
-            audio.volume = 0.5; 
-            audio.play().catch(e => console.log("Audio waiting for interaction"));
+            // 1. Fade out video overlay
+            overlay.style.transition = 'opacity 1s ease';
+            overlay.style.opacity = '0';
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                
+                // 2. Show Journey
+                journey.style.display = 'block';
+                setTimeout(() => {
+                    journey.style.opacity = '1';
+                    initScrollObserver();
+                }, 100);
 
-            // 3. Show Heart Landing
-            const landing = document.getElementById('landing');
-            landing.style.display = 'flex';
+                // 3. Stop YouTube (save resources)
+                if(player) player.stopVideo();
+
+                // 4. PLAY BGM (User clicked "Continue", so browser allows this)
+                audio.volume = 0.5;
+                audio.play();
+
+            }, 1000);
         }
 
-        // --- STEP 2: TRIGGER VIDEO (Heart Click) ---
-        function triggerVideo() {
-            // 1. Pause BGM (So video audio is clear)
+        function replayVideo() {
+            const overlay = document.getElementById('video-overlay');
+            const btn = document.getElementById('continue-btn');
+            
+            // Reset UI
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '1';
+            btn.style.display = 'none';
             audio.pause();
 
-            // 2. Open Video Overlay
-            document.getElementById('video-overlay').style.display = 'flex';
-            document.getElementById('continue-btn').style.display = 'none'; // Hide continue button initially
-
-            // 3. Go Fullscreen
-            toggleFullScreen(document.documentElement);
-
-            // 4. Play Video
-            if (player && isVideoReady) {
+            if (player) {
                 player.playVideo();
             }
         }
 
-        // --- STEP 3: FINISH VIDEO (User clicks "Continue") ---
-        function finishVideo() {
-            // 1. Hide Overlay
-            document.getElementById('video-overlay').style.display = 'none';
-
-            // 2. Exit Fullscreen
-            exitFullScreen();
-
-            // 3. RESUME BGM (This works because it's inside a click function)
-            audio.currentTime = 0; // Restart song or keep it paused position
-            audio.play();
-
-            // 4. Reveal Journey (if it's the first time)
-            const landing = document.getElementById('landing');
-            const journey = document.getElementById('journey');
-            
-            if (landing.style.display !== 'none') {
-                landing.style.opacity = '0';
-                setTimeout(() => {
-                    landing.style.display = 'none';
-                    journey.style.display = 'block';
-                    setTimeout(() => {
-                        journey.style.opacity = '1';
-                        initScrollObserver();
-                    }, 100);
-                }, 500);
-            }
-        }
-
         // --- UTILS ---
-        function toggleFullScreen(elem) {
-            if (elem.requestFullscreen) { elem.requestFullscreen(); }
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-        }
-
-        function exitFullScreen() {
-            if (document.exitFullscreen) { document.exitFullscreen(); }
-            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-        }
-
         function openLightbox(src) {
             document.getElementById('lightbox-img').src = src;
             document.getElementById('lightbox').style.display = 'flex';
@@ -502,7 +393,7 @@
         }
 
         function spawnHearts(e) {
-            if(e.target.closest('.play-btn') || e.target.closest('.heart-btn') || e.target.closest('.enter-btn') || e.target.closest('.img-container')) return;
+            if(e.target.closest('button') || e.target.closest('.img-container')) return;
 
             const colors = ['#f43f5e', '#fb7185', '#fbbf24', '#ffffff'];
             const heart = document.createElement('div');
